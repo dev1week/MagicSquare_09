@@ -12,6 +12,7 @@
 | [03-service-view.md](./03-service-view.md) | 실제 서비스 기준 관점 (기능·품질·경계) |
 | [04-open-questions.md](./04-open-questions.md) | 미결정 사항 — 다음 단계 입력용 |
 | [10-red-green-implementation-mapping.md](./10-red-green-implementation-mapping.md) | RED ↔ Green 구현·테스트 단위 매핑 (154 passed) |
+| [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md) | Golden Master baseline 구현·회귀 테스트 (178 passed) |
 
 ## 확정된 전제 (2026-05-28)
 
@@ -22,4 +23,4 @@
 ## 프로젝트 상태
 
 - 저장소: `c:\dev\MagicSquare`
-- 코드/테스트: Boundary·Domain Green (`154 passed`) — [10-red-green-implementation-mapping.md](./report/10-red-green-implementation-mapping.md) 참고
+- 코드/테스트: Boundary·Domain Green + Golden Master (`178 passed`) — [10-red-green-implementation-mapping.md](./10-red-green-implementation-mapping.md), [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md) 참고
