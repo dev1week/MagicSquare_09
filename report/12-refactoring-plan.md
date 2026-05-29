@@ -1,8 +1,8 @@
 # Refactor 계획서
 
 > **작성일:** 2026-05-29  
-> **상태:** Phase 0~2 완료 — `196 passed`, Phase 3 진행 예정  
-> **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (196 passed)  
+> **상태:** Phase 0~3 완료 — `201 passed`, Phase 4 진행 예정  
+> **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (201 passed)  
 > **기준 설계:** [05-dual-track-clean-architecture-tdd-design.md](./05-dual-track-clean-architecture-tdd-design.md)  
 > **선행 보고서:** [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)  
 > **프로젝트 규칙:** [`.cursor/rules/`](../.cursor/rules/) — Red → Green → Refactor, assertion 약화·테스트 삭제 금지
@@ -24,10 +24,10 @@ Green 상태 Solver·Boundary 구현을 **외부 계약(EC-1~5, OC-1~6, `int[6]`
 | 순번 | 대상 파일 | 문제 | 적용 기법 | 우선순위 |
 |------|-----------|------|-----------|----------|
 | 1 | `src/domain/constants.py` + … | … | **Extract Constant** — ✅ Phase 2 완료 (2026-05-29) | **High** |
-| 2 | `src/boundary/input_validator.py`, `src/boundary/complete_grid_verifier.py` | 4×4 크기·타입·중복 검사 로직 중복. partial(0 허용·빈칸 2) vs complete(1~16·16개) 정책 차이가 묵시적 | **Extract Class / Strategy** — 공통 `GridStructureValidator` + `PartialGridPolicy` / `CompleteGridPolicy` 분리. 기존 public API·에러 코드 유지 | **High** |
-| 3 | `tests/fixtures/error_catalog.py`, … | … | **SSOT 통일** — ✅ Phase 1 완료 | **High** |
-| 4 | `src/domain/solve_partial_grid.py` | 0-index → 1-index 변환·`int[6]` 조립이 유일 지점. 리팩터 시 OC-1~6·Golden Master 전체 영향 | **Preserve + Extract Method** — `to_solution_vector(...)` 등 의미 단위 추출만 허용, 시그니처·순서 불변 | **High** |
-| 5 | `src/boundary/resolver.py`, `src/boundary/complete_grid_verifier.py` | `UnsolvableGrid`→`DOMAIN_UNSOLVABLE`, `GridNotComplete`/`InvalidGridSize`→`INVALID_SIZE` 매핑 분산 | **Extract Method / Mapping Table** — `_map_domain_exception(exc)` 단일 함수로 통합 (동작 동일) | **High** |
+| 2 | … | … | **Extract Class / Strategy** — ✅ Phase 3 (`grid_validation.py`) | **High** |
+| 3 | … | … | **SSOT 통일** — ✅ Phase 1 완료 | **High** |
+| 4 | … | … | **Extract Method** — ✅ Phase 3 (`solution_vector.py`) | **High** |
+| 5 | … | … | **Mapping Table** — ✅ Phase 3 (`domain_exception_mapping.py`) | **High** |
 | 6 | … | … | **SSOT 통일** — ✅ Phase 1 완료 (`GOLDEN_MASTER_GRIDS`) | **Medium** |
 | 7 | … | … | **Clarify Intent** — ✅ Phase 1 완료 (spy mock 주석) | **Medium** |
 | 8 | `src/domain/placement_trial_solver.py` | `solve`/`_trial` 매개변수 5개. `_trial` 반환 grid는 caller에서 미사용(dead return) | **Introduce Parameter Object** — `PlacementContext` dataclass. `_trial`은 `bool` 반환으로 단순화 | **Medium** |
@@ -186,7 +186,7 @@ python -m pytest tests/regression/test_golden_master_solver.py -v
 |------|------|
 | 2026-05-29 | 초안 — Golden Master 리뷰·리팩토링 점검 기반 Plan only |
 | 2026-05-29 | **Phase 0~1 실행** — 분기 테스트 +17, ERROR_CATALOG SSOT, `GOLDEN_MASTER_GRIDS` 통합 (`195 passed`) |
-| 2026-05-29 | **Phase 2 실행** — Domain constants SSOT, 7 modules 치환, Golden Master Green (`196 passed`) |
+| 2026-05-29 | **Phase 3 실행** — grid validation strategy, solution vector, exception mapping (`201 passed`) |
 
 ---
 
@@ -219,3 +219,29 @@ python -m pytest tests/ -q                                         # 196 passed
 ```
 
 EC-2 partial(0~16) vs complete(1~16) 정책 **유지** 확인.
+
+---
+
+## 9. Phase 3 실행 결과 (2026-05-29)
+
+### 9.1 신규 모듈
+
+| 모듈 | 역할 |
+|------|------|
+| `src/boundary/grid_validation.py` | `GridStructureValidator` + partial/complete policy |
+| `src/boundary/domain_exception_mapping.py` | `boundary_error_code_for` |
+| `src/domain/solution_vector.py` | `to_solution_vector` (OC-3 1-index) |
+
+### 9.2 리팩터 대상
+
+- `input_validator.py` → `GridStructureValidator(PARTIAL_GRID_POLICY)` 위임
+- `complete_grid_verifier.py` → `GridStructureValidator(COMPLETE_GRID_POLICY)` + mapping
+- `resolver.py` → `boundary_error_code_for` 사용
+- `solve_partial_grid.py` → `to_solution_vector` 사용
+
+### 9.3 검증
+
+```powershell
+python -m pytest tests/regression/test_golden_master_solver.py -v  # 17 passed
+python -m pytest tests/ -q                                         # 201 passed
+```

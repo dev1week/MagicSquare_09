@@ -3,7 +3,7 @@
 4×4 마방진을 **생성**하고 **검증**하는 프로그램 프로젝트입니다.  
 Boundary·Domain **Green** 구현 완료, 통합·회귀·Golden Master baseline 잠금까지 진행된 상태입니다.
 
-> **테스트:** `196 passed` (`python -m pytest tests/ -q`, 2026-05-29)
+> **테스트:** `201 passed` (`python -m pytest tests/ -q`, 2026-05-29)
 
 ## 한 줄 요약
 
@@ -48,8 +48,8 @@ pip install -e ".[gui]"
 python -m pytest tests/ -v
 
 # 트랙별
-python -m pytest tests/boundary/ -v    # 86
-python -m pytest tests/domain/ -v      # 56
+python -m pytest tests/boundary/ -v    # 90
+python -m pytest tests/domain/ -v      # 57
 python -m pytest tests/integration/ -v # 7
 python -m pytest tests/regression/ -v  # 43
 
@@ -84,8 +84,8 @@ MagicSquare/
 │       ├── placement_trial_solver.py
 │       └── solve_partial_grid.py
 ├── tests/
-│   ├── boundary/                    ← Track A (86 tests)
-│   ├── domain/                      ← Track B (56 tests)
+│   ├── boundary/                    ← Track A (90 tests)
+│   ├── domain/                      ← Track B (57 tests)
 │   ├── integration/                 ← Track C 통합 (7 tests)
 │   ├── regression/                  ← Track C 회귀 (43 tests)
 │   └── fixtures/
@@ -130,9 +130,9 @@ MagicSquare/
 | 문제 정의 | 완료 (`report/01~04`) |
 | 설계 | 완료 (`report/05`, `08~09`) |
 | 구현 | **Green** — Boundary + Domain + GUI |
-| 테스트 | **196 passed** — Boundary 86 / Domain 56 / Integration 7 / Regression 43 |
+| 테스트 | **201 passed** — Boundary 90 / Domain 57 / Integration 7 / Regression 43 |
 | Golden Master | **17 passed** — solver 출력 baseline 잠금 + 키 parity |
-| Refactor / 커버리지 게이트 | Phase 0~2 ✅ — Phase 3 대기 ([12-refactoring-plan.md](./report/12-refactoring-plan.md)) |
+| Refactor / 커버리지 게이트 | Phase 0~3 ✅ — Phase 4 대기 ([12-refactoring-plan.md](./report/12-refactoring-plan.md)) |
 
 ## 구현·테스트 현황
 
@@ -284,7 +284,7 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 ## TODO / 백로그
 
 > **Refactor 실행 계획:** [report/12-refactoring-plan.md](./report/12-refactoring-plan.md) — Phase 0(Test First) → 5(Verify)  
-> 기준: Golden Master 코드 리뷰 (2026-05-29), `pytest --cov=src` (196 passed), [`.cursor/rules/`](./.cursor/rules/)  
+> 기준: Golden Master 코드 리뷰 (2026-05-29), `pytest --cov=src` (201 passed), [`.cursor/rules/`](./.cursor/rules/)  
 > TDD·금지 규칙: Red → Green → Refactor, assertion 약화·테스트 삭제 금지, public 함수 typing 필수.
 
 ### Phase 0 — 테스트 선행 (Refactor 전 Red → Green) ✅
@@ -309,11 +309,12 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 - [x] **Boundary 치환** — `input_validator`, `complete_grid_verifier`, `grid_io` (partial 0~16 vs complete 1~16 정책 유지)
 - [x] **Golden Master 17건 Green** — `196 passed`
 
-### Phase 3 — High Risk (계획 `#2`, `#4`, `#5`)
+### Phase 3 — High Risk (계획 `#2`, `#4`, `#5`) ✅
 
-- [ ] **검증기 Strategy 추출** — `InputValidator` / `CompleteGridVerifier` 공통화, partial vs complete 정책 분리 (EC-1~4 유지)
-- [ ] **`int[6]` 변환 Extract Method** — `solve_partial_grid.py` OC-3 변환만 의미 단위 추출
-- [ ] **Domain 예외 → Boundary 매핑 통합** — `resolver.py` / `complete_grid_verifier.py`
+- [x] **검증기 Strategy 추출** — `grid_validation.py` + `PARTIAL_GRID_POLICY` / `COMPLETE_GRID_POLICY`
+- [x] **`int[6]` 변환 Extract Method** — `solution_vector.to_solution_vector`
+- [x] **Domain 예외 → Boundary 매핑** — `domain_exception_mapping.boundary_error_code_for`
+- [x] **Golden Master 17건 Green** — `201 passed`
 
 ### Phase 4 — Medium (계획 `#8`~`#11`, `#13`)
 
@@ -327,7 +328,7 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 
 - [ ] **`pytest --cov=src --cov-branch`** — Boundary ≥85%, Domain ≥95%
 - [ ] **`pyproject.toml`** — coverage omit(GUI)/branch 설정
-- [ ] **CI 파이프라인** — 196+ tests + Golden Master + contract gate
+- [ ] **CI 파이프라인** — 201+ tests + Golden Master + contract gate
 
 ### 별도 Phase — 범위 외·Low (계획 `#14`~`#16`)
 
@@ -338,7 +339,7 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 - [ ] **Control 레이어 / Data** — `src/control/` 분리, Repository (`report/05` §3)
 - [ ] **`report/10-red-green-implementation-mapping.md`** — Stage 5 Golden Master·Refactor 슬라이스 반영
 
-> Solver·Validator 핵심 경로는 **196 tests Green**. Phase 0~2 완료 — Phase 3(High Risk) 대기.
+> Solver·Validator 핵심 경로는 **201 tests Green**. Phase 0~3 완료 — Phase 4(Medium) 대기.
 
 ### 구현 대비 테스트 커버리지 요약 (2026-05-29)
 
