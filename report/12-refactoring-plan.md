@@ -1,7 +1,7 @@
 # Refactor 계획서
 
 > **작성일:** 2026-05-29  
-> **상태:** Phase 0~3 완료 — `201 passed`, Phase 4 진행 예정  
+> **상태:** Phase 0~4 완료 — `209 passed`, Phase 5 진행 예정  
 > **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (201 passed)  
 > **기준 설계:** [05-dual-track-clean-architecture-tdd-design.md](./05-dual-track-clean-architecture-tdd-design.md)  
 > **선행 보고서:** [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)  
@@ -30,12 +30,13 @@ Green 상태 Solver·Boundary 구현을 **외부 계약(EC-1~5, OC-1~6, `int[6]`
 | 5 | … | … | **Mapping Table** — ✅ Phase 3 (`domain_exception_mapping.py`) | **High** |
 | 6 | … | … | **SSOT 통일** — ✅ Phase 1 완료 (`GOLDEN_MASTER_GRIDS`) | **Medium** |
 | 7 | … | … | **Clarify Intent** — ✅ Phase 1 완료 (spy mock 주석) | **Medium** |
-| 8 | `src/domain/placement_trial_solver.py` | `solve`/`_trial` 매개변수 5개. `_trial` 반환 grid는 caller에서 미사용(dead return) | **Introduce Parameter Object** — `PlacementContext` dataclass. `_trial`은 `bool` 반환으로 단순화 | **Medium** |
-| 9 | `src/boundary/complete_grid_verifier.py` | L71–72 `len(seen) != 16` 분기 — 도달 불가에 가까운 dead branch | **Remove Dead Code** — 분기 제거 전 테스트로 “절대 호출 안 됨” 증명 | **Medium** |
-| 10 | `src/boundary/ui/main_window.py` | `SolveTab`/`VerifyTab` `_set_status`·탭 boilerplate 중복. Verify blank 선차단으로 Verifier 에러 경로와 GUI 메시지 diverge | **Extract Superclass / Mixin** — `StatusMixin`, `TabShell` 추출. Verify blank 검사는 Verifier 위임 검토 | **Medium** |
-| 11 | `src/domain/empty_cell_locator.py`, `src/domain/missing_number_resolver.py` | Boundary 전제(빈칸 2·누락 2) 미검증 → 직접 호출 시 `IndexError` | **Precondition Assert / Domain Guard** — 명시 예외 또는 docstring+private guard | **Medium** |
+| 8 | … | … | **Parameter Object** — ✅ Phase 4 (`PlacementContext`) | **Medium** |
+| 9 | … | … | **Remove Dead Code** — ✅ Phase 4 (`grid_validation`) | **Medium** |
+| 10 | … | … | **Mixin** — ✅ Phase 4 (`StatusMixin`) | **Medium** |
+| 11 | … | … | **Domain Guard** — ✅ Phase 4 | **Medium** |
+| 13 | … | … | **Test traceability** — ✅ Phase 4 | **Low** |
 | 12 | `SolvePartialGrid`, `PlacementTrialSolver`, `CompleteGridVerifier` | `judge or MagicSquareJudge()` 패턴 3회 반복 | **Extract Factory** — `_default_judge(judge)` (Domain 내부 private) | **Low** |
-| 13 | `tests/fixtures/golden_master/solver_outputs.py` | `ac_ids`/`test_ids` 메타데이터 미검증 | **Test or Remove** — traceability assert 추가 또는 fixture 단순화 | **Low** |
+| 13 | `tests/fixtures/golden_master/solver_outputs.py` | `ac_ids`/`test_ids` 메타데이터 미검증 | **Test traceability** — ✅ Phase 4 | **Low** |
 | 14 | `scripts/` (신규), `solver_outputs.py` docstring | 캡처 스크립트 부재 | **Add Script** — baseline 재생성 자동화 | **Low** |
 | 15 | `src/entity/user.py`, `src/domain/` (구조) | Magic Square와 무관한 Entity scaffold. Control 레이어 부재 | **Architectural (별도 Phase)** — `src/control/` 분리·scaffold 정리 | **Low** |
 | 16 | `src/boundary/ui/main_window.py`, `main.py`, `samples.py` | GUI 0% coverage | **pytest-qt / Smoke Test** — 계약 무관, 별 트랙 | **Low** |
@@ -186,7 +187,7 @@ python -m pytest tests/regression/test_golden_master_solver.py -v
 |------|------|
 | 2026-05-29 | 초안 — Golden Master 리뷰·리팩토링 점검 기반 Plan only |
 | 2026-05-29 | **Phase 0~1 실행** — 분기 테스트 +17, ERROR_CATALOG SSOT, `GOLDEN_MASTER_GRIDS` 통합 (`195 passed`) |
-| 2026-05-29 | **Phase 3 실행** — grid validation strategy, solution vector, exception mapping (`201 passed`) |
+| 2026-05-29 | **Phase 4 실행** — PlacementContext, StatusMixin, Domain guard, traceability (`209 passed`) |
 
 ---
 
@@ -244,4 +245,25 @@ EC-2 partial(0~16) vs complete(1~16) 정책 **유지** 확인.
 ```powershell
 python -m pytest tests/regression/test_golden_master_solver.py -v  # 17 passed
 python -m pytest tests/ -q                                         # 201 passed
+```
+
+---
+
+## 10. Phase 4 실행 결과 (2026-05-29)
+
+### 10.1 변경 요약
+
+| 항목 | 내용 |
+|------|------|
+| `PlacementContext` | `PlacementTrialSolver.solve(context)`, `_trial` → `bool` |
+| `grid_validation.py` | redundant `len(seen) != CELL_COUNT` 제거 |
+| `status_mixin.py` | `StatusMixin` for Solve/Verify tabs |
+| Domain guard | `GridNotComplete` when blank/missing count ≠ 2 |
+| Golden Master | `test_golden_master_traceability_metadata_is_present` × 6 |
+
+### 10.2 검증
+
+```powershell
+python -m pytest tests/regression/test_golden_master_solver.py -v  # 23 passed
+python -m pytest tests/ -q                                         # 209 passed
 ```
