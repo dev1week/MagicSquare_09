@@ -2,11 +2,13 @@
 
 from src.boundary.error_catalog import ERROR_CATALOG
 from src.boundary.schemas import ErrorResponse
-
-_GRID_SIZE = 4
-_MIN_CELL_VALUE = 0
-_MAX_CELL_VALUE = 16
-_REQUIRED_BLANK_COUNT = 2
+from src.domain.constants import (
+    BLANK_CELL,
+    GRID_SIZE,
+    MAX_CELL_VALUE,
+    MIN_PARTIAL_CELL_VALUE,
+    REQUIRED_BLANK_COUNT,
+)
 
 
 class InputValidator:
@@ -39,11 +41,11 @@ class InputValidator:
         if not isinstance(grid, list):
             return self._error("INVALID_SIZE")
 
-        if len(grid) != _GRID_SIZE:
+        if len(grid) != GRID_SIZE:
             return self._error("INVALID_SIZE")
 
         for row in grid:
-            if not isinstance(row, list) or len(row) != _GRID_SIZE:
+            if not isinstance(row, list) or len(row) != GRID_SIZE:
                 return self._error("INVALID_SIZE")
 
         return None
@@ -55,14 +57,14 @@ class InputValidator:
                     return self._error("INVALID_SIZE")
                 if not isinstance(cell, int):
                     return self._error("CELL_VALUE_OUT_OF_RANGE")
-                if cell < _MIN_CELL_VALUE or cell > _MAX_CELL_VALUE:
+                if cell < MIN_PARTIAL_CELL_VALUE or cell > MAX_CELL_VALUE:
                     return self._error("CELL_VALUE_OUT_OF_RANGE")
 
         return None
 
     def _validate_blank_count(self, grid: list[list[int]]) -> ErrorResponse | None:
-        blank_count = sum(cell == 0 for row in grid for cell in row)
-        if blank_count != _REQUIRED_BLANK_COUNT:
+        blank_count = sum(cell == BLANK_CELL for row in grid for cell in row)
+        if blank_count != REQUIRED_BLANK_COUNT:
             return self._error("EMPTY_CELL_COUNT_INVALID")
 
         return None
@@ -71,7 +73,7 @@ class InputValidator:
         seen: set[int] = set()
         for row in grid:
             for cell in row:
-                if cell == 0:
+                if cell == BLANK_CELL:
                     continue
                 if cell in seen:
                     return self._error("DUPLICATE_NON_ZERO")

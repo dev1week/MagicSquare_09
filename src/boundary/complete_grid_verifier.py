@@ -3,13 +3,15 @@
 from dataclasses import dataclass
 
 from src.boundary.error_catalog import ERROR_CATALOG
-from src.domain.constants import MAGIC_CONSTANT
+from src.domain.constants import (
+    CELL_COUNT,
+    GRID_SIZE,
+    MAGIC_CONSTANT,
+    MAX_CELL_VALUE,
+    MIN_FILLED_CELL_VALUE,
+)
 from src.domain.exceptions import GridNotComplete, InvalidGridSize
 from src.domain.magic_square_judge import MagicSquareJudge
-
-_GRID_SIZE = 4
-_MIN_CELL_VALUE = 1
-_MAX_CELL_VALUE = 16
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,24 +53,24 @@ class CompleteGridVerifier:
         return VerifySuccess(is_magic=is_magic, magic_constant=MAGIC_CONSTANT)
 
     def _validate_structure(self, grid: object) -> VerifyError | None:
-        if not isinstance(grid, list) or len(grid) != _GRID_SIZE:
+        if not isinstance(grid, list) or len(grid) != GRID_SIZE:
             return self._error("INVALID_SIZE")
 
         seen: set[int] = set()
         for row in grid:
-            if not isinstance(row, list) or len(row) != _GRID_SIZE:
+            if not isinstance(row, list) or len(row) != GRID_SIZE:
                 return self._error("INVALID_SIZE")
 
             for cell in row:
                 if not isinstance(cell, int):
                     return self._error("CELL_VALUE_OUT_OF_RANGE")
-                if cell < _MIN_CELL_VALUE or cell > _MAX_CELL_VALUE:
+                if cell < MIN_FILLED_CELL_VALUE or cell > MAX_CELL_VALUE:
                     return self._error("CELL_VALUE_OUT_OF_RANGE")
                 if cell in seen:
                     return self._error("DUPLICATE_NON_ZERO")
                 seen.add(cell)
 
-        if len(seen) != _GRID_SIZE * _GRID_SIZE:
+        if len(seen) != CELL_COUNT:
             return self._error("DUPLICATE_NON_ZERO")
 
         return None
