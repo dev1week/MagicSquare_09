@@ -7,6 +7,14 @@ Do not edit by hand; regenerate by re-running the capture script against
 from typing import Final, TypedDict
 
 from tests.fixtures.error_catalog import ERROR_CATALOG
+from tests.fixtures.grids import (
+    GRID_CORNER_BLANK_0_0,
+    GRID_MISSING_15_16,
+    GRID_MISSING_3_7,
+    GRID_PUZZLE_SECOND_TRIAL,
+    GRID_UNSOLVABLE,
+    VALID_GRID_TWO_BLANKS,
+)
 
 
 class BoundarySuccessRecord(TypedDict):
@@ -46,6 +54,15 @@ class GoldenMasterFailure(TypedDict):
 GoldenMasterRecord = GoldenMasterSuccess | GoldenMasterFailure
 
 _DOMAIN_UNSOLVABLE_MESSAGE: Final[str] = ERROR_CATALOG["DOMAIN_UNSOLVABLE"]
+
+GOLDEN_MASTER_GRIDS: Final[dict[str, list[list[int]]]] = {
+    "VALID_GRID_TWO_BLANKS": VALID_GRID_TWO_BLANKS,
+    "GRID_PUZZLE_SECOND_TRIAL": GRID_PUZZLE_SECOND_TRIAL,
+    "GRID_CORNER_BLANK_0_0": GRID_CORNER_BLANK_0_0,
+    "GRID_MISSING_15_16": GRID_MISSING_15_16,
+    "GRID_MISSING_3_7": GRID_MISSING_3_7,
+    "GRID_UNSOLVABLE": GRID_UNSOLVABLE,
+}
 
 GOLDEN_MASTER_SOLVER_OUTPUTS: Final[dict[str, GoldenMasterRecord]] = {
     "VALID_GRID_TWO_BLANKS": {

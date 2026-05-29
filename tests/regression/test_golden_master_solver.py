@@ -7,24 +7,10 @@ from src.boundary.response_formatter import ResponseFormatter
 from src.domain.exceptions import UnsolvableGrid
 from src.domain.solve_partial_grid import SolvePartialGrid
 from tests.fixtures.error_catalog import ERROR_CATALOG
-from tests.fixtures.golden_master.solver_outputs import GOLDEN_MASTER_SOLVER_OUTPUTS
-from tests.fixtures.grids import (
-    GRID_CORNER_BLANK_0_0,
-    GRID_MISSING_15_16,
-    GRID_MISSING_3_7,
-    GRID_PUZZLE_SECOND_TRIAL,
-    GRID_UNSOLVABLE,
-    VALID_GRID_TWO_BLANKS,
+from tests.fixtures.golden_master.solver_outputs import (
+    GOLDEN_MASTER_GRIDS,
+    GOLDEN_MASTER_SOLVER_OUTPUTS,
 )
-
-_FIXTURE_GRIDS: dict[str, list[list[int]]] = {
-    "VALID_GRID_TWO_BLANKS": VALID_GRID_TWO_BLANKS,
-    "GRID_PUZZLE_SECOND_TRIAL": GRID_PUZZLE_SECOND_TRIAL,
-    "GRID_CORNER_BLANK_0_0": GRID_CORNER_BLANK_0_0,
-    "GRID_MISSING_15_16": GRID_MISSING_15_16,
-    "GRID_MISSING_3_7": GRID_MISSING_3_7,
-    "GRID_UNSOLVABLE": GRID_UNSOLVABLE,
-}
 
 
 @pytest.fixture
@@ -56,6 +42,12 @@ def _assert_oc_contract(grid: list[list[int]], result: list[int]) -> None:
 
 
 @pytest.mark.regression
+def test_golden_master_grid_keys_match_outputs() -> None:
+    """Golden Master — grid registry keys stay aligned with baseline records."""
+    assert set(GOLDEN_MASTER_GRIDS) == set(GOLDEN_MASTER_SOLVER_OUTPUTS)
+
+
+@pytest.mark.regression
 @pytest.mark.parametrize("fixture_name", list(GOLDEN_MASTER_SOLVER_OUTPUTS))
 def test_golden_master_domain_matches_runtime(
     solver: SolvePartialGrid,
@@ -63,7 +55,7 @@ def test_golden_master_domain_matches_runtime(
 ) -> None:
     """Golden Master — Domain execute output matches captured baseline."""
     golden = GOLDEN_MASTER_SOLVER_OUTPUTS[fixture_name]
-    grid = _FIXTURE_GRIDS[fixture_name]
+    grid = GOLDEN_MASTER_GRIDS[fixture_name]
 
     if "domain_result" in golden:
         result = solver.execute(grid)
@@ -84,7 +76,7 @@ def test_golden_master_boundary_matches_runtime(
 ) -> None:
     """Golden Master — Boundary resolve output matches captured baseline."""
     golden = GOLDEN_MASTER_SOLVER_OUTPUTS[fixture_name]
-    grid = _FIXTURE_GRIDS[fixture_name]
+    grid = GOLDEN_MASTER_GRIDS[fixture_name]
     boundary_golden = golden["boundary"]
 
     result = resolver.solve(grid)
@@ -115,7 +107,7 @@ def test_golden_master_formatted_output_matches_runtime(
 ) -> None:
     """Golden Master — ResponseFormatter text matches captured baseline."""
     golden = GOLDEN_MASTER_SOLVER_OUTPUTS[fixture_name]
-    grid = _FIXTURE_GRIDS[fixture_name]
+    grid = GOLDEN_MASTER_GRIDS[fixture_name]
 
     domain_result = solver.execute(grid)
     formatted = ResponseFormatter.format_success(domain_result)
