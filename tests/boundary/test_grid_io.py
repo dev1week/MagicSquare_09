@@ -48,3 +48,36 @@ def test_apply_solution_fills_blanks() -> None:
 def test_format_cell_shows_blank_as_empty() -> None:
     assert format_cell(0) == ""
     assert format_cell(7) == "7"
+
+
+@pytest.mark.boundary
+@pytest.mark.parametrize("text", ["17", "-1"])
+def test_parse_cell_text_rejects_out_of_range(text: str) -> None:
+    with pytest.raises(GridParseError):
+        parse_cell_text(text)
+
+
+@pytest.mark.boundary
+def test_read_grid_rejects_wrong_row_count() -> None:
+    texts = [["1", "2", "3", "4"]] * 3
+    with pytest.raises(GridParseError, match="4 rows"):
+        read_grid(texts)
+
+
+@pytest.mark.boundary
+def test_read_grid_rejects_wrong_column_count() -> None:
+    texts = [
+        ["1", "2", "3"],
+        ["4", "5", "6", "7"],
+        ["8", "9", "10", "11"],
+        ["12", "13", "14", "15"],
+    ]
+    with pytest.raises(GridParseError, match="Row 1"):
+        read_grid(texts)
+
+
+@pytest.mark.boundary
+def test_apply_solution_rejects_wrong_vector_length() -> None:
+    grid = [[0] * 4 for _ in range(4)]
+    with pytest.raises(ValueError, match="length 6"):
+        apply_solution(grid, [1, 2, 3])

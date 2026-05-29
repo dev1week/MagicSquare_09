@@ -22,17 +22,14 @@ from src.boundary.complete_grid_verifier import (
 from src.boundary.resolver import BoundaryError, BoundaryResolver, BoundarySuccess
 from src.boundary.response_formatter import ResponseFormatter
 from src.boundary.ui.grid_io import (
-    GRID_SIZE,
     GridParseError,
     apply_solution,
     grid_to_cell_texts,
     read_grid,
 )
 from src.boundary.ui.samples import SAMPLE_MAGIC_SQUARE, SAMPLE_PUZZLE
-
-_STATUS_INFO = "color: #1f4b7a;"
-_STATUS_SUCCESS = "color: #1b6b2f; font-weight: bold;"
-_STATUS_ERROR = "color: #a11b1b; font-weight: bold;"
+from src.boundary.ui.status_mixin import StatusMixin
+from src.domain.constants import BLANK_CELL, GRID_SIZE, MAGIC_CONSTANT
 
 
 class GridEditor(QWidget):
@@ -85,7 +82,7 @@ class GridEditor(QWidget):
                 cell.setEnabled(enabled)
 
 
-class SolveTab(QWidget):
+class SolveTab(StatusMixin, QWidget):
     """Solve a partial grid with exactly two blank cells."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -113,23 +110,12 @@ class SolveTab(QWidget):
         button_row.addStretch()
         root.addLayout(button_row)
 
-        self._status = QLabel("Ready.")
-        self._status.setWordWrap(True)
-        root.addWidget(self._status)
+        self._init_status_label(root)
         root.addStretch()
 
         self._solve_button.clicked.connect(self._on_solve)
         self._sample_button.clicked.connect(self._on_load_sample)
         self._clear_button.clicked.connect(self._on_clear)
-
-    def _set_status(self, text: str, level: str = "info") -> None:
-        style = {
-            "info": _STATUS_INFO,
-            "success": _STATUS_SUCCESS,
-            "error": _STATUS_ERROR,
-        }[level]
-        self._status.setText(text)
-        self._status.setStyleSheet(style)
 
     def _on_load_sample(self) -> None:
         self._editor.set_grid(SAMPLE_PUZZLE)
@@ -163,7 +149,7 @@ class SolveTab(QWidget):
         )
 
 
-class VerifyTab(QWidget):
+class VerifyTab(StatusMixin, QWidget):
     """Verify a complete 4×4 magic square."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -190,23 +176,12 @@ class VerifyTab(QWidget):
         button_row.addStretch()
         root.addLayout(button_row)
 
-        self._status = QLabel("Ready.")
-        self._status.setWordWrap(True)
-        root.addWidget(self._status)
+        self._init_status_label(root)
         root.addStretch()
 
         self._verify_button.clicked.connect(self._on_verify)
         self._sample_button.clicked.connect(self._on_load_sample)
         self._clear_button.clicked.connect(self._on_clear)
-
-    def _set_status(self, text: str, level: str = "info") -> None:
-        style = {
-            "info": _STATUS_INFO,
-            "success": _STATUS_SUCCESS,
-            "error": _STATUS_ERROR,
-        }[level]
-        self._status.setText(text)
-        self._status.setStyleSheet(style)
 
     def _on_load_sample(self) -> None:
         self._editor.set_grid(SAMPLE_MAGIC_SQUARE)
@@ -223,7 +198,7 @@ class VerifyTab(QWidget):
             self._set_status(error.message, level="error")
             return
 
-        if any(value == 0 for row in grid for value in row):
+        if any(value == BLANK_CELL for row in grid for value in row):
             self._set_status(
                 "Verification requires a complete grid with no blank cells.",
                 level="error",
@@ -275,7 +250,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(tabs)
 
         about = QLabel(
-            "Solve: fill two blanks to complete a magic square (sum = 34).\n"
+            f"Solve: fill two blanks to complete a magic square (sum = {MAGIC_CONSTANT}).\n"
             "Verify: check whether a full grid is a valid magic square."
         )
         about.setWordWrap(True)

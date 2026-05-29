@@ -9,11 +9,36 @@ VALID_GRID_TWO_BLANKS: Final[list[list[int]]] = [
     [13, 3, 2, 0],
 ]
 
+# Boundary domain_spy mock return only — not real solver output (Golden: [2,3,7,4,4,16]).
 VALID_GRID_SUCCESS_RESULT: Final[list[int]] = [2, 3, 5, 4, 1, 11]
 
 KNOWN_MAGIC_SQUARE: Final[list[list[int]]] = [
     [1, 15, 14, 4],
     [12, 6, 7, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 16],
+]
+
+# All row sums stay 34; column 0 breaks (Phase 0 — judge column branch).
+GRID_ALL_ROWS_VALID_COLUMN_BROKEN: Final[list[list[int]]] = [
+    [15, 1, 14, 4],
+    [12, 6, 7, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 16],
+]
+
+# Row and column sums stay 34; main diagonal breaks (Phase 5 — judge branch).
+GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN: Final[list[list[int]]] = [
+    [2, 14, 14, 4],
+    [11, 7, 7, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 16],
+]
+
+# Row and column sums stay 34; anti diagonal breaks (Phase 5 — judge branch).
+GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN: Final[list[list[int]]] = [
+    [1, 15, 15, 3],
+    [12, 6, 6, 10],
     [8, 10, 11, 5],
     [13, 3, 2, 16],
 ]

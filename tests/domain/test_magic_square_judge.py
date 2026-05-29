@@ -7,6 +7,9 @@ from src.domain.exceptions import GridNotComplete, InvalidGridSize
 from src.domain.magic_square_judge import MagicSquareJudge
 from tests.fixtures.grids import (
     GRID_3_BY_4,
+    GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN,
+    GRID_ALL_ROWS_VALID_COLUMN_BROKEN,
+    GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN,
     GRID_INCOMPLETE_WITH_ZERO,
     KNOWN_MAGIC_SQUARE,
 )
@@ -58,17 +61,17 @@ def test_row_sum_not_34_returns_false(
 def test_column_sum_not_34_returns_false(
     judge: MagicSquareJudge,
 ) -> None:
-    """DT-03 ??any column sum != MAGIC_CONSTANT returns false."""
+    """DT-03 — column branch fails while all row sums remain MAGIC_CONSTANT."""
     # AC-US-04-07
-    # Given
-    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
-    grid[0][0] = 2
-    grid[1][0] = 14
+    # Given — row sums preserved, column 0 broken
+    grid = GRID_ALL_ROWS_VALID_COLUMN_BROKEN
+    row_sums = [sum(row) for row in grid]
 
     # When
     result = judge.is_magic(grid)
 
     # Then
+    assert all(total == MAGIC_CONSTANT for total in row_sums)
     assert result is False
 
 
@@ -77,17 +80,21 @@ def test_column_sum_not_34_returns_false(
 def test_main_diagonal_sum_not_34_returns_false(
     judge: MagicSquareJudge,
 ) -> None:
-    """DT-03 ??main diagonal sum != MAGIC_CONSTANT returns false."""
+    """DT-03 — main diagonal branch fails while row and column sums stay MAGIC_CONSTANT."""
     # AC-US-04-07
     # Given
-    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
-    grid[0][0] = 2
-    grid[1][1] = 5
+    grid = GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN
+    row_sums = [sum(row) for row in grid]
+    column_sums = [sum(grid[row_index][col_index] for row_index in range(4)) for col_index in range(4)]
+    main_diagonal_sum = sum(grid[index][index] for index in range(4))
 
     # When
     result = judge.is_magic(grid)
 
     # Then
+    assert all(total == MAGIC_CONSTANT for total in row_sums)
+    assert all(total == MAGIC_CONSTANT for total in column_sums)
+    assert main_diagonal_sum != MAGIC_CONSTANT
     assert result is False
 
 
@@ -96,18 +103,58 @@ def test_main_diagonal_sum_not_34_returns_false(
 def test_anti_diagonal_sum_not_34_returns_false(
     judge: MagicSquareJudge,
 ) -> None:
-    """DT-03 ??anti diagonal sum != MAGIC_CONSTANT returns false."""
+    """DT-03 — anti diagonal branch fails while row and column sums stay MAGIC_CONSTANT."""
     # AC-US-04-07
     # Given
-    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
-    grid[0][3] = 2
-    grid[3][0] = 15
+    grid = GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN
+    row_sums = [sum(row) for row in grid]
+    column_sums = [sum(grid[row_index][col_index] for row_index in range(4)) for col_index in range(4)]
+    anti_diagonal_sum = sum(grid[row_index][3 - row_index] for row_index in range(4))
 
     # When
     result = judge.is_magic(grid)
 
     # Then
+    assert all(total == MAGIC_CONSTANT for total in row_sums)
+    assert all(total == MAGIC_CONSTANT for total in column_sums)
+    assert anti_diagonal_sum != MAGIC_CONSTANT
     assert result is False
+
+
+@pytest.mark.domain
+@pytest.mark.p0
+def test_legacy_column_failure_fixture_still_returns_false(
+    judge: MagicSquareJudge,
+) -> None:
+    """Legacy fixture — row may fail before column; kept for regression."""
+    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
+    grid[0][0] = 2
+    grid[1][0] = 14
+    assert judge.is_magic(grid) is False
+
+
+@pytest.mark.domain
+@pytest.mark.p0
+def test_legacy_main_diagonal_failure_fixture_still_returns_false(
+    judge: MagicSquareJudge,
+) -> None:
+    """Legacy fixture — row may fail before diagonal; kept for regression."""
+    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
+    grid[0][0] = 2
+    grid[1][1] = 5
+    assert judge.is_magic(grid) is False
+
+
+@pytest.mark.domain
+@pytest.mark.p0
+def test_legacy_anti_diagonal_failure_fixture_still_returns_false(
+    judge: MagicSquareJudge,
+) -> None:
+    """Legacy fixture — row may fail before diagonal; kept for regression."""
+    grid = [row[:] for row in KNOWN_MAGIC_SQUARE]
+    grid[0][3] = 2
+    grid[3][0] = 15
+    assert judge.is_magic(grid) is False
 
 
 @pytest.mark.domain

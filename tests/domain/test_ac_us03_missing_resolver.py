@@ -42,12 +42,12 @@ def test_resolver_has_no_input_validation_method(
 
 @pytest.mark.domain
 @pytest.mark.p0
-def test_out_of_range_present_values_still_return_two_missing(
+def test_out_of_range_present_values_raise_domain_not_boundary_error(
     resolver: MissingNumberResolver,
 ) -> None:
-    """AC-US-03-05 — invalid cell values do not trigger Boundary error codes."""
-    # AC-US-03-05
-    # Given
+    """AC-US-03-05 — invalid cell values raise Domain error, not Boundary codes."""
+    from src.domain.exceptions import GridNotComplete
+
     grid = [
         [17, 2, 3, 4],
         [5, 6, 0, 8],
@@ -55,9 +55,5 @@ def test_out_of_range_present_values_still_return_two_missing(
         [13, 14, 15, 0],
     ]
 
-    # When
-    small, large = resolver.resolve(grid)
-
-    # Then
-    assert len((small, large)) == 2
-    assert small < large
+    with pytest.raises(GridNotComplete, match="Expected 2 missing numbers"):
+        resolver.resolve(grid)

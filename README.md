@@ -1,9 +1,9 @@
 # MagicSquare
 
 4×4 마방진을 **생성**하고 **검증**하는 프로그램 프로젝트입니다.  
-Boundary·Domain **Green** 구현 완료, 통합·회귀·Golden Master baseline 잠금까지 진행된 상태입니다.
+Boundary·Domain **Green** 구현 완료, Golden Master baseline 잠금, Refactor Phase 0~5 및 **CI coverage gate**까지 적용된 상태입니다.
 
-> **테스트:** `178 passed` (`python -m pytest tests/ -q`, 2026-05-29)
+> **테스트:** `209 passed` (`python -m pytest tests/ -q`, 2026-05-29)
 
 ## 한 줄 요약
 
@@ -48,13 +48,18 @@ pip install -e ".[gui]"
 python -m pytest tests/ -v
 
 # 트랙별
-python -m pytest tests/boundary/ -v    # 73
-python -m pytest tests/domain/ -v      # 52
+python -m pytest tests/boundary/ -v    # 90
+python -m pytest tests/domain/ -v      # 59
 python -m pytest tests/integration/ -v # 7
-python -m pytest tests/regression/ -v  # 42
+python -m pytest tests/regression/ -v  # 49
 
 # Golden Master만
-python -m pytest tests/regression/test_golden_master_solver.py -v  # 16
+python -m pytest tests/regression/test_golden_master_solver.py -v  # 23
+
+# 커버리지 게이트 (Phase 5 — GUI omit)
+python -m pytest tests/ --cov=src/boundary --cov=src/domain --cov-branch -q
+python -m coverage report --include='src/domain/*' --fail-under=95
+python -m coverage report --include='src/boundary/*' --omit='src/boundary/ui/main_window.py,src/boundary/ui/samples.py,src/boundary/ui/status_mixin.py' --fail-under=85
 ```
 
 ### GUI 실행
@@ -69,7 +74,8 @@ python main.py
 MagicSquare/
 ├── README.md
 ├── main.py                          ← PyQt6 GUI 진입점
-├── pyproject.toml
+├── pyproject.toml                   ← pytest markers, coverage omit/branch
+├── .github/workflows/ci.yml         ← pytest + Golden Master + coverage gate
 ├── docs/test_plan.md                ← pytest 테스트 계획서
 ├── src/
 │   ├── boundary/                    ← US-01 입력 검증·위임·출력
@@ -84,10 +90,10 @@ MagicSquare/
 │       ├── placement_trial_solver.py
 │       └── solve_partial_grid.py
 ├── tests/
-│   ├── boundary/                    ← Track A (73 tests)
-│   ├── domain/                      ← Track B (52 tests)
+│   ├── boundary/                    ← Track A (90 tests)
+│   ├── domain/                      ← Track B (59 tests)
 │   ├── integration/                 ← Track C 통합 (7 tests)
-│   ├── regression/                  ← Track C 회귀 (42 tests)
+│   ├── regression/                  ← Track C 회귀 (49 tests)
 │   └── fixtures/
 │       ├── grids.py
 │       ├── error_catalog.py
@@ -95,17 +101,27 @@ MagicSquare/
 │           └── solver_outputs.py
 ├── report/                          ← 문제 정의·설계·구현 보고서
 └── prompt/                          ← 대화·프롬프트 기록
+    ├── cursor_magic_square_prompt_transcript_2026-05-29_golden_master.md
+    └── cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md
 ```
 
 ## 문서
 
 | 문서 | 설명 |
 |------|------|
-| [docs/test_plan.md](./docs/test_plan.md) | pytest Dual-Track 계획, mock/spy, 커버리지 |
+| [docs/test_plan.md](./docs/test_plan.md) | pytest Dual-Track 계획, mock/spy, **커버리지 게이트·CI** (Phase 5 반영) |
 | [report/README.md](./report/README.md) | 리포트 목차 |
 | [report/09-user-stories-magic-square-4x4-report.md](./report/09-user-stories-magic-square-4x4-report.md) | US-01~05 User Stories |
 | [report/10-red-green-implementation-mapping.md](./report/10-red-green-implementation-mapping.md) | RED ↔ Green 구현·테스트 매핑 |
 | [report/11-golden-master-implementation-report.md](./report/11-golden-master-implementation-report.md) | Golden Master baseline 구현 보고서 |
+| [report/12-refactoring-plan.md](./report/12-refactoring-plan.md) | **Refactor 계획서** — Phase 0~5 완료, CI coverage gate |
+
+### Prompt 기록 (`prompt/`)
+
+| 파일 | 세션 |
+|------|------|
+| [cursor_magic_square_prompt_transcript_2026-05-29_golden_master.md](./prompt/cursor_magic_square_prompt_transcript_2026-05-29_golden_master.md) | Golden Master baseline 설계·구현 |
+| [cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md](./prompt/cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md) | Refactor Phase 0~5 — 리뷰·계획·커버리지·CI |
 
 ## 범위 요약
 
@@ -129,14 +145,14 @@ MagicSquare/
 | 문제 정의 | 완료 (`report/01~04`) |
 | 설계 | 완료 (`report/05`, `08~09`) |
 | 구현 | **Green** — Boundary + Domain + GUI |
-| 테스트 | **178 passed** — Boundary 73 / Domain 52 / Integration 7 / Regression 42 |
-| Golden Master | **16 passed** — solver 출력 baseline 잠금 |
-| Refactor / 커버리지 게이트 | 진행 예정 (branch ≥85% / ≥95%) |
+| 테스트 | **209 passed** — Boundary 90 / Domain 59 / Integration 7 / Regression 49 |
+| Golden Master | **23 passed** — baseline + 키 parity + traceability |
+| Refactor / 커버리지 게이트 | Phase 0~5 ✅ — Boundary ≥85%, Domain ≥95% ([12-refactoring-plan.md](./report/12-refactoring-plan.md)) |
 
 ## 구현·테스트 현황
 
-> Dual-Track TDD: **Red → Green 완료**, Stage 5 Regression·Golden Master 진행 중.  
-> 상세: [`docs/test_plan.md`](./docs/test_plan.md), [`report/10-red-green-implementation-mapping.md`](./report/10-red-green-implementation-mapping.md)
+> Dual-Track TDD: **Red → Green → Refactor 완료** (Phase 0~5).  
+> 상세: [`docs/test_plan.md`](./docs/test_plan.md), [`report/12-refactoring-plan.md`](./report/12-refactoring-plan.md)
 
 ### Track A — Boundary (US-01) — Green
 
@@ -188,7 +204,7 @@ MagicSquare/
 
 - [x] **DT-04**, **DT-05**, **AC-US-05-01** ~ **AC-US-05-11**, **DM-E03**
 - [x] `src/domain/placement_trial_solver.py`, `solve_partial_grid.py`
-- [x] `src/domain/exceptions.py` — `GridNotComplete`, `InvalidGridSize`, `UnsolvableGrid`
+- [x] `src/domain/constants.py`, `exceptions.py` — `MAGIC_CONSTANT`, grid SSOT (`GRID_SIZE`, `BLANK_CELL`, …)
 
 **공통 Domain 인프라**
 
@@ -229,18 +245,19 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 | `GRID_UNSOLVABLE` | `UnsolvableGrid` | — |
 
 - [x] `tests/fixtures/golden_master/solver_outputs.py` — baseline dict
-- [x] `tests/regression/test_golden_master_solver.py` — 16 tests Green
+- [x] `tests/regression/test_golden_master_solver.py` — 23 tests Green
 - 상세: [report/11-golden-master-implementation-report.md](./report/11-golden-master-implementation-report.md)
 
 > **참고:** `grids.py`의 `VALID_GRID_SUCCESS_RESULT = [2,3,5,4,1,11]`은 Boundary **spy mock**용 목값이며, 실제 솔버 Golden baseline과 다릅니다.
 
-### 커버리지 목표 (미측정)
+### 커버리지 목표
 
-- [ ] `pytest --cov=src --cov-report=term-missing` — 로컬 측정
-- [ ] Boundary branch **≥ 85%** (`src/boundary/`)
-- [ ] Domain branch **≥ 95%** (`src/domain/`)
-- [ ] `pyproject.toml` — pytest markers, coverage `omit`/`branch` 설정
-- [ ] CI 파이프라인
+- [x] `pytest --cov=src --cov-report=term-missing` — 로컬 측정 (line **59%**, 2026-05-29)
+- [x] `pytest --cov=src --cov-branch` — branch 측정 및 게이트 적용 (GUI omit)
+- [x] Boundary branch **≥ 85%** (`src/boundary/`, GUI 제외) — **~98%**
+- [x] Domain branch **≥ 95%** (`src/domain/`) — **100%** (`magic_square_judge` 대각선 fixture 보강)
+- [x] `pyproject.toml` — pytest markers, coverage `omit`/`branch` 설정
+- [x] CI 파이프라인 — `.github/workflows/ci.yml`
 
 | 레이어 | Branch 목표 | 측정 패키지 | User Story |
 |--------|-------------|-------------|------------|
@@ -264,12 +281,12 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 
 #### US-02~04 — Domain
 
-| Case ID | 기대 | 테스트 |
-|---------|------|--------|
-| BL-01~03 | 빈칸 탐색 | DT-01, AC-US-02 |
-| MN-01~03 | 누락 숫자 | DT-02, AC-US-03 |
-| MV-01~04 | 마방진 판정 | DT-03, AC-US-04 |
-| DM-E01~02 | 전제 위반 예외 | DT-03 |
+| Case ID   | 기대　　　　　 | 테스트　　　　　|
+| -----------| ----------------| -----------------|
+| BL-01~03  | 빈칸 탐색　　　| DT-01, AC-US-02 |
+| MN-01~03  | 누락 숫자　　　| DT-02, AC-US-03 |
+| MV-01~04  | 마방진 판정　　| DT-03, AC-US-04 |
+| DM-E01~02 | 전제 위반 예외 | DT-03　　　　　 |
 
 #### US-05 — Solver
 
@@ -279,12 +296,78 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 | EC5-01 | unsolvable | DT-05, Golden Master |
 | OC-01~06 | `int[6]` 1-index | DT-05, Golden Master |
 
-## 다음 단계
+## TODO / 백로그
 
-1. **Refactor** — 구조 개선, Golden Master·contract 게이트 Green 유지
-2. **커버리지 게이트** — Boundary ≥85%, Domain ≥95% 측정·CI 연동
-3. **정합성 정리** — `VALID_GRID_SUCCESS_RESULT`(mock) vs Golden baseline 통일 여부 결정
-4. **Data 레이어** — Repository 패턴 (설계 `report/05` §3, 별도 Phase)
+> **Refactor 실행 계획:** [report/12-refactoring-plan.md](./report/12-refactoring-plan.md) — Phase 0(Test First) → 5(Verify)  
+> 기준: Golden Master 코드 리뷰 (2026-05-29), `pytest --cov=src` (209 passed), [`.cursor/rules/`](./.cursor/rules/)  
+> TDD·금지 규칙: Red → Green → Refactor, assertion 약화·테스트 삭제 금지, public 함수 typing 필수.
+
+### Phase 0 — 테스트 선행 (Refactor 전 Red → Green) ✅
+
+> 상세: [12-refactoring-plan.md §3](./report/12-refactoring-plan.md#3-테스트-선행-필요-항목)
+
+- [x] **CompleteGridVerifier 분기** — `#2` 검증기 통합 전. `INVALID_SIZE`, non-int, Judge 예외→`INVALID_SIZE`
+- [x] **grid_io.py 분기** — `#1` 상수 치환 전. `parse_cell_text` >16, `read_grid` 행/열 오류, `apply_solution` len≠6
+- [x] **MagicSquareJudge 경로 분리** — `#1` 전. column/diagonal 전용 fixture (row 합 34 유지)
+- [x] **Golden Master / contract baseline** — 키 parity 테스트 + 17건 Green + contract gate Green
+
+### Phase 1 — Low Risk (계획 `#3`, `#6`, `#7`) ✅
+
+- [x] **ERROR_CATALOG SSOT** — `tests/fixtures/error_catalog.py` → `src.boundary.error_catalog` re-export
+- [x] **이중 fixture 레지스트리 통합** — `GOLDEN_MASTER_GRIDS` in `solver_outputs.py`, 키 parity test
+- [x] **mock vs Golden baseline** — `VALID_GRID_SUCCESS_RESULT` spy mock 주석 + conftest docstring
+
+### Phase 2 — Domain constants SSOT (계획 `#1`) ✅
+
+- [x] **`src/domain/constants.py`** — `GRID_SIZE`, `BLANK_CELL`, `MIN_PARTIAL/MIN_FILLED`, `MAX_CELL_VALUE`, `REQUIRED_BLANK_COUNT`, `SOLUTION_VECTOR_LENGTH`, `CELL_COUNT`
+- [x] **Domain 치환** — `magic_square_judge`, `missing_number_resolver`, `empty_cell_locator`
+- [x] **Boundary 치환** — `input_validator`, `complete_grid_verifier`, `grid_io` (partial 0~16 vs complete 1~16 정책 유지)
+- [x] **Golden Master 17건 Green** — `196 passed`
+
+### Phase 3 — High Risk (계획 `#2`, `#4`, `#5`) ✅
+
+- [x] **검증기 Strategy 추출** — `grid_validation.py` + `PARTIAL_GRID_POLICY` / `COMPLETE_GRID_POLICY`
+- [x] **`int[6]` 변환 Extract Method** — `solution_vector.to_solution_vector`
+- [x] **Domain 예외 → Boundary 매핑** — `domain_exception_mapping.boundary_error_code_for`
+- [x] **Golden Master 17건 Green** — `201 passed`
+
+### Phase 4 — Medium (계획 `#8`~`#11`, `#13`) ✅
+
+- [x] **PlacementContext** — `placement_trial_solver.py` Parameter Object, `_trial` → `bool`
+- [x] **CompleteGridVerifier dead branch** — `grid_validation` redundant `CELL_COUNT` check 제거
+- [x] **GUI StatusMixin** — `status_mixin.py`, `SolveTab`/`VerifyTab` 공통 status
+- [x] **Domain guard** — `EmptyCellLocator` / `MissingNumberResolver` → `GridNotComplete`
+- [x] **Golden Master traceability** — `ac_ids`/`test_ids` parametrized assert (+6 tests)
+
+### Phase 5 — Verify & CI (계획 §4)
+
+- [x] **`pytest --cov=src --cov-branch`** — Boundary ≥85%, Domain ≥95% (GUI omit)
+- [x] **`pyproject.toml`** — coverage omit(GUI)/branch 설정
+- [x] **CI 파이프라인** — `.github/workflows/ci.yml` (209 tests + Golden Master + coverage gate)
+
+### 별도 Phase — 범위 외·Low (계획 `#14`~`#16`)
+
+- [ ] **캡처 스크립트** — `scripts/capture_golden_master.py` 또는 docstring 수동 절차
+- [ ] **Boundary EC-1~4 Golden Master 확장** — 입력 오류 baseline 잠금 검토
+- [ ] **GUI E2E** — `main_window.py`, `main.py` (`pytest-qt` / smoke); line cov. **0%**
+- [ ] **`User` entity** — `user_id <= 0` 테스트 또는 scaffold 역할 문서화
+- [ ] **Control 레이어 / Data** — `src/control/` 분리, Repository (`report/05` §3)
+- [ ] **`report/10-red-green-implementation-mapping.md`** — Stage 5 Golden Master·Refactor 슬라이스 반영
+
+> Solver·Validator 핵심 경로는 **209 tests Green**. Phase 0~5 완료 — CI coverage gate 적용.
+
+### 구현 대비 테스트 커버리지 요약 (2026-05-29)
+
+| 레이어 | 모듈 | 테스트 | 비고 |
+|------|------|--------|------|
+| Domain | `empty_cell_locator`, `missing_number_resolver`, `placement_trial_solver`, `solve_partial_grid`, `exceptions`, `constants` | ✅ 100% | AC·Golden Master |
+| Domain | `magic_square_judge` | ✅ 100% | row/column/diagonal 분기 (Phase 5) |
+| Boundary | `complete_grid_verifier` | △ 98% | L72 dead branch 잔존 |
+| Boundary | `ui/grid_io` | ✅ 100% | Phase 0 완료 |
+| Boundary | `input_validator`, `resolver`, `response_formatter`, `schemas`, `error_catalog` | ✅ 100% | BT·RG·Golden Master |
+| Boundary | `ui/main_window`, `ui/samples` | ❌ 0% | GUI — 자동 테스트 없음 |
+| Entity | `user` | △ 94% | `user_id <= 0` 미테스트 |
+| Entry | `main.py` | ❌ — | GUI bootstrap |
 
 ## 라이선스
 

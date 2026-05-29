@@ -1,10 +1,26 @@
-"""PlacementTrialSolver RED tests ??DT-04, DM-E03, US-05."""
+"""PlacementTrialSolver RED tests — DT-04, DM-E03, US-05."""
 
 import pytest
 
 from src.domain.exceptions import UnsolvableGrid
-from src.domain.placement_trial_solver import PlacementTrialSolver
-from tests.fixtures.grids import GRID_UNSOLVABLE, VALID_GRID_TWO_BLANKS
+from src.domain.placement_trial_solver import PlacementContext, PlacementTrialSolver
+from tests.fixtures.grids import GRID_PUZZLE_SECOND_TRIAL, GRID_UNSOLVABLE, VALID_GRID_TWO_BLANKS
+
+
+def _context(
+    grid: list[list[int]],
+    first_blank: tuple[int, int],
+    second_blank: tuple[int, int],
+    n_small: int,
+    n_large: int,
+) -> PlacementContext:
+    return PlacementContext(
+        grid=grid,
+        first_blank=first_blank,
+        second_blank=second_blank,
+        n_small=n_small,
+        n_large=n_large,
+    )
 
 
 @pytest.fixture
@@ -18,20 +34,12 @@ def solver() -> PlacementTrialSolver:
 def test_small_to_first_blank_large_to_second_succeeds_on_first_trial(
     solver: PlacementTrialSolver,
 ) -> None:
-    """DT-04 ??first trial places small on first blank, large on second."""
-    # AC-US-05-02
-    # Given
-    grid = VALID_GRID_TWO_BLANKS
-    first_blank = (1, 2)
-    second_blank = (3, 3)
-    n_small = 7
-    n_large = 16
+    """DT-04 — first trial places small on first blank, large on second."""
+    context = _context(VALID_GRID_TWO_BLANKS, (1, 2), (3, 3), 7, 16)
 
-    # When
-    solution = solver.solve(grid, first_blank, second_blank, n_small, n_large)
+    solution = solver.solve(context)
 
-    # Then
-    assert solution.numbers == (n_small, n_large)
+    assert solution.numbers == (7, 16)
 
 
 @pytest.mark.domain
@@ -39,20 +47,12 @@ def test_small_to_first_blank_large_to_second_succeeds_on_first_trial(
 def test_reversed_assignment_succeeds_when_first_trial_fails(
     solver: PlacementTrialSolver,
 ) -> None:
-    """DT-04 ??second trial swaps small and large when first fails."""
-    # AC-US-05-04
-    # Given
-    grid = VALID_GRID_TWO_BLANKS
-    first_blank = (1, 2)
-    second_blank = (3, 3)
-    n_small = 16
-    n_large = 7
+    """DT-04 — second trial swaps small and large when first fails."""
+    context = _context(VALID_GRID_TWO_BLANKS, (1, 2), (3, 3), 16, 7)
 
-    # When
-    solution = solver.solve(grid, first_blank, second_blank, n_small, n_large)
+    solution = solver.solve(context)
 
-    # Then
-    assert solution.numbers == (n_large, n_small)
+    assert solution.numbers == (7, 16)
 
 
 @pytest.mark.domain
@@ -60,18 +60,11 @@ def test_reversed_assignment_succeeds_when_first_trial_fails(
 def test_both_trials_fail_raises_unsolvable_grid(
     solver: PlacementTrialSolver,
 ) -> None:
-    """DM-E03 ??both placement orders failing raises UnsolvableGrid."""
-    # AC-US-05-10
-    # Given
-    grid = GRID_UNSOLVABLE
-    first_blank = (1, 2)
-    second_blank = (3, 3)
-    n_small = 7
-    n_large = 15
+    """DM-E03 — both placement orders failing raises UnsolvableGrid."""
+    context = _context(GRID_UNSOLVABLE, (1, 2), (3, 3), 7, 15)
 
-    # When / Then
     with pytest.raises(UnsolvableGrid):
-        solver.solve(grid, first_blank, second_blank, n_small, n_large)
+        solver.solve(context)
 
 
 @pytest.mark.domain
@@ -79,25 +72,16 @@ def test_both_trials_fail_raises_unsolvable_grid(
 def test_first_trial_success_invokes_validator_once(
     mocker,
 ) -> None:
-    """SV-01 ??first successful trial calls MagicSquareValidator once."""
-    # AC-US-05-03
-    # Given
+    """SV-01 — first successful trial calls MagicSquareValidator once."""
     from src.domain.magic_square_judge import MagicSquareJudge
-    from src.domain.placement_trial_solver import PlacementTrialSolver
 
     judge = MagicSquareJudge()
     spy = mocker.spy(judge, "is_magic")
     solver = PlacementTrialSolver(judge=judge)
-    grid = VALID_GRID_TWO_BLANKS
-    first_blank = (1, 2)
-    second_blank = (3, 3)
-    n_small = 7
-    n_large = 16
+    context = _context(VALID_GRID_TWO_BLANKS, (1, 2), (3, 3), 7, 16)
 
-    # When
-    solver.solve(grid, first_blank, second_blank, n_small, n_large)
+    solver.solve(context)
 
-    # Then
     assert spy.call_count == 1
 
 
@@ -106,24 +90,14 @@ def test_first_trial_success_invokes_validator_once(
 def test_second_trial_success_invokes_validator_twice(
     mocker,
 ) -> None:
-    """SV-02 ??second trial success calls validator exactly twice."""
-    # AC-US-05-05
-    # Given
+    """SV-02 — second trial success calls validator exactly twice."""
     from src.domain.magic_square_judge import MagicSquareJudge
-    from src.domain.placement_trial_solver import PlacementTrialSolver
-    from tests.fixtures.grids import GRID_PUZZLE_SECOND_TRIAL
 
     judge = MagicSquareJudge()
     spy = mocker.spy(judge, "is_magic")
     solver = PlacementTrialSolver(judge=judge)
-    grid = GRID_PUZZLE_SECOND_TRIAL
-    first_blank = (1, 2)
-    second_blank = (2, 0)
-    n_small = 3
-    n_large = 7
+    context = _context(GRID_PUZZLE_SECOND_TRIAL, (1, 2), (2, 0), 3, 7)
 
-    # When
-    solver.solve(grid, first_blank, second_blank, n_small, n_large)
+    solver.solve(context)
 
-    # Then
     assert spy.call_count == 2

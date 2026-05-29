@@ -26,3 +26,31 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "boundary: Boundary layer contract tests",
+    "domain: Domain layer invariant tests",
+    "p0: Priority 0 — must pass before merge",
+    "p1: Priority 1 tests",
+    "p2: Priority 2 tests",
+    "integration: Boundary + Domain integration tests",
+    "regression: Regression protection suite",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "src/boundary/ui/main_window.py",
+    "src/boundary/ui/samples.py",
+    "src/boundary/ui/status_mixin.py",
+    "main.py",
+    "src/entity/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+precision = 2
