@@ -1,0 +1,21 @@
+---
+description: ECB architecture responsibilities and dependency direction
+globs: "src/**/*.py"
+alwaysApply: false
+---
+
+# ECB Architecture
+
+## Layer Responsibilities
+- Boundary handles input/output mapping and validation only.
+- Control orchestrates use cases and coordinates entities.
+- Entity owns core domain rules and invariants.
+
+## Dependency Direction
+- Boundary may depend on Control interfaces.
+- Control may depend on Entity.
+- Entity must not depend on Boundary, Control framework details, or I/O.
+
+## Layer Guardrails
+- Do not place business rules in Boundary.
+- Do not couple Entity to external framework concerns.

@@ -1,0 +1,20 @@
+---
+description: Forbidden coding and testing shortcuts in MagicSquare
+alwaysApply: true
+---
+
+# Forbidden Rules
+
+## Coding
+- Never use print() for debugging in committed code.
+- Do not leave commented-out dead code.
+- Do not expose untyped public functions.
+
+## Testing
+- Do not weaken assertions to force tests passing.
+- Do not delete failing tests to make pipeline green.
+- Do not skip tests without explicit reason and ticket.
+
+## Process
+- Do not bypass TDD sequence.
+- Do not change behavior in refactor-only steps.

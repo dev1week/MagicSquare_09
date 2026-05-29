@@ -1,0 +1,19 @@
+---
+description: Core MagicSquare project constraints and AI workflow rules
+alwaysApply: true
+---
+
+# MagicSquare Project Rules
+
+## Scope
+- Project language is Python only.
+- Python version must be 3.13 or newer.
+
+## Delivery Goals
+- Keep focus on clean architecture and test-driven confidence.
+- Prefer small, reviewable changes.
+
+## AI Workflow Requirements
+- Follow explicit Red -> Green -> Refactor flow for behavior changes.
+- Do not claim completion without relevant test evidence.
+- Explain phase transitions on substantial changes.

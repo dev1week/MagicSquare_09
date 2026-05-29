@@ -1,0 +1,56 @@
+[project]
+name = "magicsquare"
+version = "0.1.0"
+description = "4x4 magic square solver and verifier"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+gui = ["PyQt6>=6.6"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.0",
+]
+
+[project.scripts]
+magicsquare = "main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "boundary: Boundary layer contract tests",
+    "domain: Domain layer invariant tests",
+    "p0: Priority 0 — must pass before merge",
+    "p1: Priority 1 tests",
+    "p2: Priority 2 tests",
+    "integration: Boundary + Domain integration tests",
+    "regression: Regression protection suite",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "src/boundary/ui/main_window.py",
+    "src/boundary/ui/samples.py",
+    "src/boundary/ui/status_mixin.py",
+    "main.py",
+    "src/entity/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+precision = 2

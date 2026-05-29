@@ -1,0 +1,24 @@
+---
+description: Dual-track TDD and pytest testing policy for MagicSquare
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# TDD and Testing
+
+## Process
+- Use dual-track TDD with Red -> Green -> Refactor.
+- Red: write tests first and verify expected failure.
+- Green: implement minimum code only to pass failing tests.
+- Refactor: improve structure without changing external behavior.
+
+## Hard Constraints
+- No implementation before Red is proven.
+- No refactoring during Green phase.
+- Keep or increase coverage during Refactor.
+
+## Testing Policy
+- Use pytest.
+- Use AAA pattern (Arrange, Act, Assert) explicitly.
+- Add regression tests for every bug fix.
+- Keep tests deterministic and isolated.
