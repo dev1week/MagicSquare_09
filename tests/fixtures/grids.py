@@ -3,10 +3,10 @@
 from typing import Final
 
 VALID_GRID_TWO_BLANKS: Final[list[list[int]]] = [
-    [1, 2, 3, 4],
-    [5, 6, 0, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 0],
+    [1, 15, 14, 4],
+    [12, 6, 0, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 0],
 ]
 
 VALID_GRID_SUCCESS_RESULT: Final[list[int]] = [2, 3, 5, 4, 1, 11]
@@ -61,7 +61,7 @@ GRID_BLANK_3_WITH_DUPLICATE: Final[list[list[int]]] = [
     [1, 2, 3, 4],
     [5, 6, 7, 7],
     [9, 10, 0, 12],
-    [13, 14, 0, 16],
+    [13, 0, 0, 16],
 ]
 
 GRID_BLANK_0: Final[list[list[int]]] = [
@@ -114,10 +114,10 @@ GRID_BLANKS_1_2_2_1: Final[list[list[int]]] = [
 ]
 
 GRID_MISSING_15_16: Final[list[list[int]]] = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12],
-    [13, 14, 0, 0],
+    [1, 0, 14, 4],
+    [12, 6, 7, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 0],
 ]
 
 GRID_MISSING_3_7: Final[list[list[int]]] = [
@@ -128,23 +128,23 @@ GRID_MISSING_3_7: Final[list[list[int]]] = [
 ]
 
 GRID_CORNER_BLANK_0_0: Final[list[list[int]]] = [
-    [0, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 16],
+    [0, 15, 14, 4],
+    [12, 6, 7, 9],
+    [8, 10, 11, 5],
+    [13, 3, 2, 0],
 ]
 
-# Second blank at (3,3); missing 7 and 16 ??fixture for solver strategy RED.
+# First trial fails, second succeeds; blanks (1,2) and (2,0); missing 3 and 7.
 GRID_PUZZLE_SECOND_TRIAL: Final[list[list[int]]] = [
-    [1, 2, 3, 4],
-    [5, 6, 0, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 0],
+    [16, 5, 9, 4],
+    [2, 11, 0, 14],
+    [0, 10, 6, 15],
+    [13, 8, 12, 1],
 ]
 
 GRID_UNSOLVABLE: Final[list[list[int]]] = [
     [1, 2, 3, 4],
     [5, 6, 0, 8],
     [9, 10, 11, 12],
-    [13, 14, 0, 16],
+    [13, 14, 15, 0],
 ]

@@ -4,7 +4,7 @@ import pytest
 
 from src.domain.exceptions import UnsolvableGrid
 from src.domain.placement_trial_solver import PlacementTrialSolver
-from tests.fixtures.grids import VALID_GRID_TWO_BLANKS
+from tests.fixtures.grids import GRID_UNSOLVABLE, VALID_GRID_TWO_BLANKS
 
 
 @pytest.fixture
@@ -42,12 +42,7 @@ def test_reversed_assignment_succeeds_when_first_trial_fails(
     """DT-04 ??second trial swaps small and large when first fails."""
     # AC-US-05-04
     # Given
-    grid = [
-        [1, 2, 3, 4],
-        [5, 6, 0, 8],
-        [9, 10, 11, 12],
-        [13, 14, 15, 0],
-    ]
+    grid = VALID_GRID_TWO_BLANKS
     first_blank = (1, 2)
     second_blank = (3, 3)
     n_small = 16
@@ -68,12 +63,7 @@ def test_both_trials_fail_raises_unsolvable_grid(
     """DM-E03 ??both placement orders failing raises UnsolvableGrid."""
     # AC-US-05-10
     # Given
-    grid = [
-        [1, 2, 3, 4],
-        [5, 6, 0, 8],
-        [9, 10, 11, 12],
-        [13, 14, 0, 16],
-    ]
+    grid = GRID_UNSOLVABLE
     first_blank = (1, 2)
     second_blank = (3, 3)
     n_small = 7
@@ -128,9 +118,9 @@ def test_second_trial_success_invokes_validator_twice(
     solver = PlacementTrialSolver(judge=judge)
     grid = GRID_PUZZLE_SECOND_TRIAL
     first_blank = (1, 2)
-    second_blank = (3, 3)
-    n_small = 7
-    n_large = 16
+    second_blank = (2, 0)
+    n_small = 3
+    n_large = 7
 
     # When
     solver.solve(grid, first_blank, second_blank, n_small, n_large)
