@@ -13,7 +13,7 @@
 | [04-open-questions.md](./04-open-questions.md) | 미결정 사항 — 다음 단계 입력용 |
 | [10-red-green-implementation-mapping.md](./10-red-green-implementation-mapping.md) | RED ↔ Green 구현·테스트 단위 매핑 (154 passed) |
 | [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md) | Golden Master baseline 구현·회귀 테스트 (178 passed) |
-| [12-refactoring-plan.md](./12-refactoring-plan.md) | Refactor 계획서 — Phase 0~5 완료, CI coverage gate (`209 passed`) |
+| [12-refactoring-plan.md](./12-refactoring-plan.md) | Refactor 계획서 — Phase 0~5 완료, 로컬 coverage gate (`209 passed`) |
 
 ## 확정된 전제 (2026-05-28)
 
@@ -25,4 +25,4 @@
 
 - 저장소: `c:\dev\MagicSquare`
 - 코드/테스트: Boundary·Domain Green + Golden Master (**`196 passed`**) — [10-red-green-implementation-mapping.md](./10-red-green-implementation-mapping.md), [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)
-- Refactor: [12-refactoring-plan.md](./12-refactoring-plan.md) — **Phase 0~5 완료**, CI coverage gate (`209 passed`)
+- Refactor: [12-refactoring-plan.md](./12-refactoring-plan.md) — **Phase 0~5 완료**, 로컬 coverage gate (`209 passed`)

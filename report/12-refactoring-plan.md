@@ -1,7 +1,7 @@
 # Refactor 계획서
 
 > **작성일:** 2026-05-29  
-> **상태:** Phase 0~5 완료 — `209 passed`, CI coverage gate Green  
+> **상태:** Phase 0~5 완료 — `209 passed`, 로컬 coverage gate Green  
 > **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (201 passed)  
 > **기준 설계:** [05-dual-track-clean-architecture-tdd-design.md](./05-dual-track-clean-architecture-tdd-design.md)  
 > **선행 보고서:** [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)  
@@ -176,7 +176,7 @@ python -m pytest tests/regression/test_golden_master_solver.py -v
 | MagicSquareJudge 경로 분리 | §3.2 | 0 |
 | Golden Master traceability | 13 | 4 |
 | Refactor (구조 개선) | §2 전체 | 1~4 |
-| branch 커버리지 / CI | §4.1 4단계 | 5 |
+| branch 커버리지 | §4.1 4단계 | 5 |
 | GUI E2E | 16 | 별도 |
 
 ---
@@ -277,7 +277,6 @@ python -m pytest tests/ -q                                         # 209 passed
 | 항목 | 내용 |
 |------|------|
 | `pyproject.toml` | pytest markers, coverage `omit`(GUI/`main.py`/`entity`), branch 측정 |
-| `.github/workflows/ci.yml` | pytest + Golden Master + Domain ≥95% / Boundary ≥85% gate |
 | `grids.py` | main/anti diagonal fixture — row·column 합 34 유지, 대각선만 깨짐 |
 | `test_magic_square_judge.py` | column/diagonal 분기 assertion 보강 |
 

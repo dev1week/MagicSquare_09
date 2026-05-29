@@ -264,8 +264,8 @@ def test_ac_us_01_01_none_grid_rejects_without_domain_call(boundary_resolver, do
 
 | 레이어 | Branch 목표 | 측정 패키지 | 게이트 | 실측 (2026-05-29) |
 |--------|---------------|-------------|--------|-------------------|
-| **Domain** | **≥ 95%** | `src/domain/` | CI fail under threshold | **100%** |
-| **Boundary** | **≥ 85%** | `src/boundary/` (GUI omit) | CI fail under threshold | **~98%** |
+| **Domain** | **≥ 95%** | `src/domain/` | 로컬 `--fail-under=95` | **100%** |
+| **Boundary** | **≥ 85%** | `src/boundary/` (GUI omit) | 로컬 `--fail-under=85` | **~98%** |
 | **전체** | ≥ 90% (참고) | `src/` | 리포트만 (hard gate 아님) | line 59% (GUI 포함) |
 
 ### 6.1 Domain 측정 대상 (≥ 95%)
@@ -327,13 +327,15 @@ python -m coverage report --include='src/domain/*' --fail-under=95
 python -m coverage report --include='src/boundary/*' --omit='src/boundary/ui/main_window.py,src/boundary/ui/samples.py,src/boundary/ui/status_mixin.py' --fail-under=85
 ```
 
-### 7.4 CI (`.github/workflows/ci.yml`)
+### 7.4 로컬 커버리지 게이트 (권장)
 
-push/PR 시:
+PR/merge 전 로컬에서 실행:
 
 1. `python -m pytest tests/ -q`
 2. `python -m pytest tests/regression/test_golden_master_solver.py -q`
-3. branch coverage 측정 + Domain ≥95% / Boundary ≥85% gate
+3. branch coverage 측정 + Domain ≥95% / Boundary ≥85% gate (`coverage report --fail-under`)
+
+> GitHub Actions CI(`.github/workflows/ci.yml`)는 PAT `workflow` scope 이슈로 **미적용**. 필요 시 별도 Phase에서 추가.
 
 ### 7.5 HTML 리포트 (로컬 선택)
 
@@ -421,13 +423,9 @@ flowchart TD
 | Error Contract | EC-1 | AC-US-01-01, 07 | BT-01, BT-08 | `ErrorResponse` (pydantic) |
 | Domain 진입 | UC-5 | AC-US-01-05 | BT-03, DT-05 | `SolvePartialGrid.execute` |
 
-  Q -->|Yes| RF[Refactor — 커버리지 유지·상승]
-  RF --> CI[GitHub Actions — gate Green]
-```
-
 ---
 
-## 11. Refactor Phase 5 — Verify & CI (2026-05-29)
+## 11. Refactor Phase 5 — Verify (2026-05-29)
 
 | 항목 | 내용 |
 |------|------|
@@ -435,7 +433,7 @@ flowchart TD
 | **Domain branch** | **100%** — `magic_square_judge` main/anti diagonal fixture 보강 |
 | **Boundary branch** | **~98%** (GUI omit) — `resolver`/`verifier` L49 re-raise 잔존 |
 | **설정** | `pyproject.toml` markers + coverage omit |
-| **CI** | `.github/workflows/ci.yml` |
+| **게이트** | 로컬 `coverage report --fail-under` (GitHub Actions CI 미적용) |
 | **계획서** | [report/12-refactoring-plan.md](../report/12-refactoring-plan.md) §11 |
 
 ### 11.1 대각선 fixture (DT-03 / AC-US-04-07)
@@ -457,11 +455,11 @@ flowchart TD
 - [x] `pytest --cov=src --cov-report=term-missing` — term-missing 확인
 - [x] BT-02 (3×4, 1D) 회귀 추가
 - [x] BT-03 (유효 입력 → `execute` 1회) 추가
-- [x] Boundary branch **≥ 85%** (GUI omit) — CI gate Green
+- [x] Boundary branch **≥ 85%** (GUI omit) — 로컬 gate Green
 - [x] Domain Track Green (DT-01~05) + branch **≥ 95%**
 - [x] Golden Master baseline 23 tests + Refactor Phase 0~5
 
 ---
 
 **문서 버전:** 1.1  
-**최종 갱신:** 2026-05-29 (Phase 5 — CI coverage gate)
+**최종 갱신:** 2026-05-29 (Phase 5 — 로컬 coverage gate)

@@ -1,7 +1,7 @@
 # MagicSquare
 
 4×4 마방진을 **생성**하고 **검증**하는 프로그램 프로젝트입니다.  
-Boundary·Domain **Green** 구현 완료, Golden Master baseline 잠금, Refactor Phase 0~5 및 **CI coverage gate**까지 적용된 상태입니다.
+Boundary·Domain **Green** 구현 완료, Golden Master baseline 잠금, Refactor Phase 0~5 및 **로컬 coverage gate**까지 적용된 상태입니다.
 
 > **테스트:** `209 passed` (`python -m pytest tests/ -q`, 2026-05-29)
 
@@ -75,7 +75,6 @@ MagicSquare/
 ├── README.md
 ├── main.py                          ← PyQt6 GUI 진입점
 ├── pyproject.toml                   ← pytest markers, coverage omit/branch
-├── .github/workflows/ci.yml         ← pytest + Golden Master + coverage gate
 ├── docs/test_plan.md                ← pytest 테스트 계획서
 ├── src/
 │   ├── boundary/                    ← US-01 입력 검증·위임·출력
@@ -109,19 +108,19 @@ MagicSquare/
 
 | 문서 | 설명 |
 |------|------|
-| [docs/test_plan.md](./docs/test_plan.md) | pytest Dual-Track 계획, mock/spy, **커버리지 게이트·CI** (Phase 5 반영) |
+| [docs/test_plan.md](./docs/test_plan.md) | pytest Dual-Track 계획, mock/spy, **로컬 커버리지 게이트** (Phase 5 반영) |
 | [report/README.md](./report/README.md) | 리포트 목차 |
 | [report/09-user-stories-magic-square-4x4-report.md](./report/09-user-stories-magic-square-4x4-report.md) | US-01~05 User Stories |
 | [report/10-red-green-implementation-mapping.md](./report/10-red-green-implementation-mapping.md) | RED ↔ Green 구현·테스트 매핑 |
 | [report/11-golden-master-implementation-report.md](./report/11-golden-master-implementation-report.md) | Golden Master baseline 구현 보고서 |
-| [report/12-refactoring-plan.md](./report/12-refactoring-plan.md) | **Refactor 계획서** — Phase 0~5 완료, CI coverage gate |
+| [report/12-refactoring-plan.md](./report/12-refactoring-plan.md) | **Refactor 계획서** — Phase 0~5 완료, 로컬 coverage gate |
 
 ### Prompt 기록 (`prompt/`)
 
 | 파일 | 세션 |
 |------|------|
 | [cursor_magic_square_prompt_transcript_2026-05-29_golden_master.md](./prompt/cursor_magic_square_prompt_transcript_2026-05-29_golden_master.md) | Golden Master baseline 설계·구현 |
-| [cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md](./prompt/cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md) | Refactor Phase 0~5 — 리뷰·계획·커버리지·CI |
+| [cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md](./prompt/cursor_magic_square_prompt_transcript_2026-05-29_refactor-phase5.md) | Refactor Phase 0~5 — 리뷰·계획·커버리지 |
 
 ## 범위 요약
 
@@ -257,7 +256,6 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 - [x] Boundary branch **≥ 85%** (`src/boundary/`, GUI 제외) — **~98%**
 - [x] Domain branch **≥ 95%** (`src/domain/`) — **100%** (`magic_square_judge` 대각선 fixture 보강)
 - [x] `pyproject.toml` — pytest markers, coverage `omit`/`branch` 설정
-- [x] CI 파이프라인 — `.github/workflows/ci.yml`
 
 | 레이어 | Branch 목표 | 측정 패키지 | User Story |
 |--------|-------------|-------------|------------|
@@ -339,14 +337,14 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 - [x] **Domain guard** — `EmptyCellLocator` / `MissingNumberResolver` → `GridNotComplete`
 - [x] **Golden Master traceability** — `ac_ids`/`test_ids` parametrized assert (+6 tests)
 
-### Phase 5 — Verify & CI (계획 §4)
+### Phase 5 — Verify (계획 §4)
 
 - [x] **`pytest --cov=src --cov-branch`** — Boundary ≥85%, Domain ≥95% (GUI omit)
 - [x] **`pyproject.toml`** — coverage omit(GUI)/branch 설정
-- [x] **CI 파이프라인** — `.github/workflows/ci.yml` (209 tests + Golden Master + coverage gate)
 
 ### 별도 Phase — 범위 외·Low (계획 `#14`~`#16`)
 
+- [ ] **GitHub Actions CI** — `.github/workflows/ci.yml` (PAT `workflow` scope 필요)
 - [ ] **캡처 스크립트** — `scripts/capture_golden_master.py` 또는 docstring 수동 절차
 - [ ] **Boundary EC-1~4 Golden Master 확장** — 입력 오류 baseline 잠금 검토
 - [ ] **GUI E2E** — `main_window.py`, `main.py` (`pytest-qt` / smoke); line cov. **0%**
@@ -354,20 +352,20 @@ Green 솔버의 **실제 런타임 출력**을 fixture별로 고정합니다. �
 - [ ] **Control 레이어 / Data** — `src/control/` 분리, Repository (`report/05` §3)
 - [ ] **`report/10-red-green-implementation-mapping.md`** — Stage 5 Golden Master·Refactor 슬라이스 반영
 
-> Solver·Validator 핵심 경로는 **209 tests Green**. Phase 0~5 완료 — CI coverage gate 적용.
+> Solver·Validator 핵심 경로는 **209 tests Green**. Phase 0~5 완료 — 로컬 coverage gate 적용.
 
 ### 구현 대비 테스트 커버리지 요약 (2026-05-29)
 
-| 레이어 | 모듈 | 테스트 | 비고 |
-|------|------|--------|------|
-| Domain | `empty_cell_locator`, `missing_number_resolver`, `placement_trial_solver`, `solve_partial_grid`, `exceptions`, `constants` | ✅ 100% | AC·Golden Master |
-| Domain | `magic_square_judge` | ✅ 100% | row/column/diagonal 분기 (Phase 5) |
-| Boundary | `complete_grid_verifier` | △ 98% | L72 dead branch 잔존 |
-| Boundary | `ui/grid_io` | ✅ 100% | Phase 0 완료 |
-| Boundary | `input_validator`, `resolver`, `response_formatter`, `schemas`, `error_catalog` | ✅ 100% | BT·RG·Golden Master |
-| Boundary | `ui/main_window`, `ui/samples` | ❌ 0% | GUI — 자동 테스트 없음 |
-| Entity | `user` | △ 94% | `user_id <= 0` 미테스트 |
-| Entry | `main.py` | ❌ — | GUI bootstrap |
+| 레이어　 | 모듈　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | 테스트 | 비고　　　　　　　　　　　　　　　 |
+| ----------| ----------------------------------------------------------------------------------------------------------------------------| --------| ------------------------------------|
+| Domain　 | `empty_cell_locator`, `missing_number_resolver`, `placement_trial_solver`, `solve_partial_grid`, `exceptions`, `constants` | ✅ 100% | AC·Golden Master　　　　　　　　　 |
+| Domain　 | `magic_square_judge`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | ✅ 100% | row/column/diagonal 분기 (Phase 5) |
+| Boundary | `complete_grid_verifier`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | △ 98%　| L72 dead branch 잔존　　　　　　　 |
+| Boundary | `ui/grid_io`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | ✅ 100% | Phase 0 완료　　　　　　　　　　　 |
+| Boundary | `input_validator`, `resolver`, `response_formatter`, `schemas`, `error_catalog`　　　　　　　　　　　　　　　　　　　　　　| ✅ 100% | BT·RG·Golden Master　　　　　　　　|
+| Boundary | `ui/main_window`, `ui/samples`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | ❌ 0%　 | GUI — 자동 테스트 없음　　　　　　 |
+| Entity　 | `user`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 | △ 94%　| `user_id <= 0` 미테스트　　　　　　|
+| Entry　　| `main.py`　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　| ❌ —　　| GUI bootstrap　　　　　　　　　　　|
 
 ## 라이선스
 
