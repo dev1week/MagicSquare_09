@@ -27,18 +27,18 @@ GRID_ALL_ROWS_VALID_COLUMN_BROKEN: Final[list[list[int]]] = [
     [13, 3, 2, 16],
 ]
 
-# All row sums stay 34; main diagonal breaks (Phase 0 — judge diagonal branch).
+# Row and column sums stay 34; main diagonal breaks (Phase 5 — judge branch).
 GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN: Final[list[list[int]]] = [
-    [4, 15, 14, 1],
-    [12, 6, 7, 9],
+    [2, 14, 14, 4],
+    [11, 7, 7, 9],
     [8, 10, 11, 5],
     [13, 3, 2, 16],
 ]
 
-# All row sums stay 34; anti diagonal breaks (Phase 0 — judge diagonal branch).
+# Row and column sums stay 34; anti diagonal breaks (Phase 5 — judge branch).
 GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN: Final[list[list[int]]] = [
-    [1, 15, 4, 14],
-    [12, 6, 7, 9],
+    [1, 15, 15, 3],
+    [12, 6, 6, 10],
     [8, 10, 11, 5],
     [13, 3, 2, 16],
 ]

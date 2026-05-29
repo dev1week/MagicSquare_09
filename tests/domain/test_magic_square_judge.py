@@ -80,17 +80,21 @@ def test_column_sum_not_34_returns_false(
 def test_main_diagonal_sum_not_34_returns_false(
     judge: MagicSquareJudge,
 ) -> None:
-    """DT-03 — main diagonal branch fails while all row sums remain MAGIC_CONSTANT."""
+    """DT-03 — main diagonal branch fails while row and column sums stay MAGIC_CONSTANT."""
     # AC-US-04-07
     # Given
     grid = GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN
     row_sums = [sum(row) for row in grid]
+    column_sums = [sum(grid[row_index][col_index] for row_index in range(4)) for col_index in range(4)]
+    main_diagonal_sum = sum(grid[index][index] for index in range(4))
 
     # When
     result = judge.is_magic(grid)
 
     # Then
     assert all(total == MAGIC_CONSTANT for total in row_sums)
+    assert all(total == MAGIC_CONSTANT for total in column_sums)
+    assert main_diagonal_sum != MAGIC_CONSTANT
     assert result is False
 
 
@@ -99,17 +103,21 @@ def test_main_diagonal_sum_not_34_returns_false(
 def test_anti_diagonal_sum_not_34_returns_false(
     judge: MagicSquareJudge,
 ) -> None:
-    """DT-03 — anti diagonal branch fails while all row sums remain MAGIC_CONSTANT."""
+    """DT-03 — anti diagonal branch fails while row and column sums stay MAGIC_CONSTANT."""
     # AC-US-04-07
     # Given
     grid = GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN
     row_sums = [sum(row) for row in grid]
+    column_sums = [sum(grid[row_index][col_index] for row_index in range(4)) for col_index in range(4)]
+    anti_diagonal_sum = sum(grid[row_index][3 - row_index] for row_index in range(4))
 
     # When
     result = judge.is_magic(grid)
 
     # Then
     assert all(total == MAGIC_CONSTANT for total in row_sums)
+    assert all(total == MAGIC_CONSTANT for total in column_sums)
+    assert anti_diagonal_sum != MAGIC_CONSTANT
     assert result is False
 
 
