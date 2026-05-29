@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass
 
+from src.boundary.domain_exception_mapping import boundary_error_code_for
 from src.boundary.error_catalog import ERROR_CATALOG
 from src.boundary.input_validator import InputValidator
-from src.domain.exceptions import UnsolvableGrid
 from src.domain.solve_partial_grid import SolvePartialGrid
 
 
@@ -43,10 +43,13 @@ class BoundaryResolver:
 
         try:
             result = self._use_case.execute(grid)
-        except UnsolvableGrid:
+        except Exception as exc:
+            error_code = boundary_error_code_for(exc)
+            if error_code is None:
+                raise
             return BoundaryError(
-                code="DOMAIN_UNSOLVABLE",
-                message=ERROR_CATALOG["DOMAIN_UNSOLVABLE"],
+                code=error_code,
+                message=ERROR_CATALOG[error_code],
             )
 
         return BoundarySuccess(result=result)

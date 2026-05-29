@@ -4,6 +4,7 @@ from src.domain.empty_cell_locator import EmptyCellLocator
 from src.domain.magic_square_judge import MagicSquareJudge
 from src.domain.missing_number_resolver import MissingNumberResolver
 from src.domain.placement_trial_solver import PlacementTrialSolver
+from src.domain.solution_vector import to_solution_vector
 
 
 class SolvePartialGrid:
@@ -31,11 +32,9 @@ class SolvePartialGrid:
         )
         first_number, second_number = solution.numbers
 
-        return [
-            first_blank[0] + 1,
-            first_blank[1] + 1,
+        return to_solution_vector(
+            first_blank,
+            second_blank,
             first_number,
-            second_blank[0] + 1,
-            second_blank[1] + 1,
             second_number,
-        ]
+        )
