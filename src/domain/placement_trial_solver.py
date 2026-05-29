@@ -8,6 +8,17 @@ from src.domain.magic_square_judge import MagicSquareJudge
 
 
 @dataclass(frozen=True, slots=True)
+class PlacementContext:
+    """Inputs for a two-blank placement attempt."""
+
+    grid: list[list[int]]
+    first_blank: tuple[int, int]
+    second_blank: tuple[int, int]
+    n_small: int
+    n_large: int
+
+
+@dataclass(frozen=True, slots=True)
 class PlacementSolution:
     """Successful placement of the two missing numbers."""
 
@@ -20,50 +31,23 @@ class PlacementTrialSolver:
     def __init__(self, judge: MagicSquareJudge | None = None) -> None:
         self._judge = judge if judge is not None else MagicSquareJudge()
 
-    def solve(
-        self,
-        grid: list[list[int]],
-        first_blank: tuple[int, int],
-        second_blank: tuple[int, int],
-        n_small: int,
-        n_large: int,
-    ) -> PlacementSolution:
+    def solve(self, context: PlacementContext) -> PlacementSolution:
         """Return the first successful (first-blank, second-blank) number pair."""
-        first_trial = self._trial(
-            grid,
-            first_blank,
-            second_blank,
-            n_small,
-            n_large,
-        )
-        if first_trial is not None:
-            return PlacementSolution(numbers=(n_small, n_large))
+        if self._trial(context, context.n_small, context.n_large):
+            return PlacementSolution(numbers=(context.n_small, context.n_large))
 
-        second_trial = self._trial(
-            grid,
-            first_blank,
-            second_blank,
-            n_large,
-            n_small,
-        )
-        if second_trial is not None:
-            return PlacementSolution(numbers=(n_large, n_small))
+        if self._trial(context, context.n_large, context.n_small):
+            return PlacementSolution(numbers=(context.n_large, context.n_small))
 
         raise UnsolvableGrid
 
     def _trial(
         self,
-        grid: list[list[int]],
-        first_blank: tuple[int, int],
-        second_blank: tuple[int, int],
+        context: PlacementContext,
         first_value: int,
         second_value: int,
-    ) -> list[list[int]] | None:
-        candidate = deepcopy(grid)
-        candidate[first_blank[0]][first_blank[1]] = first_value
-        candidate[second_blank[0]][second_blank[1]] = second_value
-
-        if self._judge.is_magic(candidate):
-            return candidate
-
-        return None
+    ) -> bool:
+        candidate = deepcopy(context.grid)
+        candidate[context.first_blank[0]][context.first_blank[1]] = first_value
+        candidate[context.second_blank[0]][context.second_blank[1]] = second_value
+        return self._judge.is_magic(candidate)

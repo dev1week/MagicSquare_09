@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 from src.domain.constants import (
     BLANK_CELL,
-    CELL_COUNT,
     GRID_SIZE,
     MAX_CELL_VALUE,
     MIN_FILLED_CELL_VALUE,
@@ -20,21 +19,18 @@ class GridValidationPolicy:
     min_cell_value: int
     max_cell_value: int
     required_blank_count: int | None
-    require_full_unique_count: bool
 
 
 PARTIAL_GRID_POLICY = GridValidationPolicy(
     min_cell_value=MIN_PARTIAL_CELL_VALUE,
     max_cell_value=MAX_CELL_VALUE,
     required_blank_count=REQUIRED_BLANK_COUNT,
-    require_full_unique_count=False,
 )
 
 COMPLETE_GRID_POLICY = GridValidationPolicy(
     min_cell_value=MIN_FILLED_CELL_VALUE,
     max_cell_value=MAX_CELL_VALUE,
     required_blank_count=None,
-    require_full_unique_count=True,
 )
 
 
@@ -107,8 +103,5 @@ class GridStructureValidator:
                 if cell in seen:
                     return "DUPLICATE_NON_ZERO"
                 seen.add(cell)
-
-        if self._policy.require_full_unique_count and len(seen) != CELL_COUNT:
-            return "DUPLICATE_NON_ZERO"
 
         return None

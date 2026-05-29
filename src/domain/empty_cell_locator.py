@@ -1,6 +1,7 @@
 """Locate blank (zero) cells in a partial grid."""
 
-from src.domain.constants import BLANK_CELL
+from src.domain.constants import BLANK_CELL, REQUIRED_BLANK_COUNT
+from src.domain.exceptions import GridNotComplete
 
 
 class EmptyCellLocator:
@@ -14,5 +15,10 @@ class EmptyCellLocator:
             for col_index, value in enumerate(row)
             if value == BLANK_CELL
         ]
+        if len(blanks) != REQUIRED_BLANK_COUNT:
+            raise GridNotComplete(
+                f"Expected {REQUIRED_BLANK_COUNT} blank cells, found {len(blanks)}."
+            )
+
         first, second = blanks[0], blanks[1]
         return first, second

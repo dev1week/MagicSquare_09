@@ -3,7 +3,7 @@
 from src.domain.empty_cell_locator import EmptyCellLocator
 from src.domain.magic_square_judge import MagicSquareJudge
 from src.domain.missing_number_resolver import MissingNumberResolver
-from src.domain.placement_trial_solver import PlacementTrialSolver
+from src.domain.placement_trial_solver import PlacementContext, PlacementTrialSolver
 from src.domain.solution_vector import to_solution_vector
 
 
@@ -23,13 +23,14 @@ class SolvePartialGrid:
         first_blank, second_blank = self._locator.locate(grid)
         n_small, n_large = self._resolver.resolve(grid)
 
-        solution = placement_solver.solve(
-            grid,
-            first_blank,
-            second_blank,
-            n_small,
-            n_large,
+        context = PlacementContext(
+            grid=grid,
+            first_blank=first_blank,
+            second_blank=second_blank,
+            n_small=n_small,
+            n_large=n_large,
         )
+        solution = placement_solver.solve(context)
         first_number, second_number = solution.numbers
 
         return to_solution_vector(
