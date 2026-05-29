@@ -149,3 +149,16 @@ def test_resolve_returns_exactly_two_missing_numbers(
 
     # Then
     assert len(missing) == 2
+
+
+@pytest.mark.domain
+@pytest.mark.p0
+def test_wrong_missing_count_raises_grid_not_complete(
+    resolver: MissingNumberResolver,
+) -> None:
+    """Domain guard — exactly two numbers must be missing."""
+    from src.domain.exceptions import GridNotComplete
+    from tests.fixtures.grids import GRID_BLANK_0
+
+    with pytest.raises(GridNotComplete, match="Expected 2 missing numbers"):
+        resolver.resolve(GRID_BLANK_0)

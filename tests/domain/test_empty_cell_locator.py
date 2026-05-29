@@ -154,3 +154,16 @@ def test_returned_coordinates_match_all_zero_cells_in_grid(
 
     # Then
     assert {first, second} == expected_zeros
+
+
+@pytest.mark.domain
+@pytest.mark.p0
+def test_wrong_blank_count_raises_grid_not_complete(
+    locator: EmptyCellLocator,
+) -> None:
+    """Domain guard — blank count must match REQUIRED_BLANK_COUNT."""
+    from src.domain.exceptions import GridNotComplete
+    from tests.fixtures.grids import GRID_BLANK_1
+
+    with pytest.raises(GridNotComplete, match="Expected 2 blank cells"):
+        locator.locate(GRID_BLANK_1)

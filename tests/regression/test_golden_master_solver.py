@@ -49,6 +49,15 @@ def test_golden_master_grid_keys_match_outputs() -> None:
 
 @pytest.mark.regression
 @pytest.mark.parametrize("fixture_name", list(GOLDEN_MASTER_SOLVER_OUTPUTS))
+def test_golden_master_traceability_metadata_is_present(fixture_name: str) -> None:
+    """Golden Master — ac_ids and test_ids remain non-empty traceability anchors."""
+    record = GOLDEN_MASTER_SOLVER_OUTPUTS[fixture_name]
+    assert record["ac_ids"]
+    assert record["test_ids"]
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize("fixture_name", list(GOLDEN_MASTER_SOLVER_OUTPUTS))
 def test_golden_master_domain_matches_runtime(
     solver: SolvePartialGrid,
     fixture_name: str,
