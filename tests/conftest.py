@@ -11,6 +11,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+pytest_plugins = ["tests.boundary.conftest"]
+
 
 def pytest_configure(config: pytest.Config) -> None:
     """Register custom markers for Dual-Track TDD."""
