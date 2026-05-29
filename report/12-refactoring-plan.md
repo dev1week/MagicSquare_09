@@ -1,7 +1,7 @@
 # Refactor 계획서
 
 > **작성일:** 2026-05-29  
-> **상태:** Phase 0~4 완료 — `209 passed`, Phase 5 진행 예정  
+> **상태:** Phase 0~5 완료 — `209 passed`, CI coverage gate Green  
 > **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (201 passed)  
 > **기준 설계:** [05-dual-track-clean-architecture-tdd-design.md](./05-dual-track-clean-architecture-tdd-design.md)  
 > **선행 보고서:** [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)  
@@ -266,4 +266,33 @@ python -m pytest tests/ -q                                         # 201 passed
 ```powershell
 python -m pytest tests/regression/test_golden_master_solver.py -v  # 23 passed
 python -m pytest tests/ -q                                         # 209 passed
+```
+
+---
+
+## 11. Phase 5 실행 결과 (2026-05-29)
+
+### 11.1 변경 요약
+
+| 항목 | 내용 |
+|------|------|
+| `pyproject.toml` | pytest markers, coverage `omit`(GUI/`main.py`/`entity`), branch 측정 |
+| `.github/workflows/ci.yml` | pytest + Golden Master + Domain ≥95% / Boundary ≥85% gate |
+| `grids.py` | main/anti diagonal fixture — row·column 합 34 유지, 대각선만 깨짐 |
+| `test_magic_square_judge.py` | column/diagonal 분기 assertion 보강 |
+
+### 11.2 커버리지 (GUI omit)
+
+| 패키지 | Branch | 비고 |
+|--------|--------|------|
+| `src/domain/` | **100%** | `magic_square_judge` 대각선 분기 Green |
+| `src/boundary/` (core) | **98%** | `resolver`/`verifier` L49 unknown re-raise 잔존 |
+
+### 11.3 검증
+
+```powershell
+python -m pytest tests/ -q
+python -m pytest tests/ --cov=src/boundary --cov=src/domain --cov-branch -q
+python -m coverage report --include='src/domain/*' --fail-under=95
+python -m coverage report --include='src/boundary/*' --omit='src/boundary/ui/main_window.py,src/boundary/ui/samples.py,src/boundary/ui/status_mixin.py' --fail-under=85
 ```

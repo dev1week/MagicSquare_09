@@ -262,11 +262,11 @@ def test_ac_us_01_01_none_grid_rejects_without_domain_call(boundary_resolver, do
 
 ## 6. 커버리지 목표
 
-| 레이어 | Branch 목표 | 측정 패키지 | 게이트 |
-|--------|---------------|-------------|--------|
-| **Domain** | **≥ 95%** | `src/domain/` | CI fail under threshold |
-| **Boundary** | **≥ 85%** | `src/boundary/` | CI fail under threshold |
-| **전체** | ≥ 90% (참고) | `src/` | 리포트만 (hard gate 아님) |
+| 레이어 | Branch 목표 | 측정 패키지 | 게이트 | 실측 (2026-05-29) |
+|--------|---------------|-------------|--------|-------------------|
+| **Domain** | **≥ 95%** | `src/domain/` | CI fail under threshold | **100%** |
+| **Boundary** | **≥ 85%** | `src/boundary/` (GUI omit) | CI fail under threshold | **~98%** |
+| **전체** | ≥ 90% (참고) | `src/` | 리포트만 (hard gate 아님) | line 59% (GUI 포함) |
 
 ### 6.1 Domain 측정 대상 (≥ 95%)
 
@@ -283,11 +283,18 @@ def test_ac_us_01_01_none_grid_rejects_without_domain_call(boundary_resolver, do
 - `ErrorMapper` / `ErrorResponse` (pydantic)
 - `ResponseFormatter` (성공 출력)
 
-### 6.3 커버리지에서 제외 (`.coveragerc` 또는 `pyproject.toml`)
+### 6.3 커버리지에서 제외 (`pyproject.toml` — Phase 5 적용)
 
-- `tests/`
-- `__pycache__/`
-- 타입 stub / `if TYPE_CHECKING:` 블록 (선택)
+| 경로 | 사유 |
+|------|------|
+| `src/boundary/ui/main_window.py` | GUI — pytest-qt 미적용 |
+| `src/boundary/ui/samples.py` | GUI 샘플 데이터 |
+| `src/boundary/ui/status_mixin.py` | GUI mixin — smoke 미적용 |
+| `main.py` | PyQt6 bootstrap |
+| `src/entity/*` | Magic Square와 무관 scaffold |
+| `tests/`, `__pycache__/` | 테스트·캐시 (coverage 기본 제외) |
+
+> **측정 대상:** `src/boundary/` 핵심 + `src/boundary/ui/grid_io.py` + `src/domain/` 전체
 
 ---
 
@@ -307,25 +314,37 @@ pytest --cov=src --cov-report=term-missing
 
 - `--cov-report=term-missing`: 미커버 line 번호를 터미널에 출력 → RED/Green 후 누락 branch 즉시 확인
 
-### 7.3 레이어별 분리 측정
+### 7.3 레이어별 분리 측정 (Phase 5 — 권장)
 
-```bash
-# Boundary Track만
-pytest tests/boundary/ --cov=src/boundary --cov-report=term-missing --cov-fail-under=85
+```powershell
+# 전체 + branch (GUI omit은 pyproject.toml 기본)
+python -m pytest tests/ --cov=src/boundary --cov=src/domain --cov-branch -q
 
-# Domain Track만
-pytest tests/domain/ --cov=src/domain --cov-report=term-missing --cov-fail-under=95
+# Domain gate (≥ 95%)
+python -m coverage report --include='src/domain/*' --fail-under=95
+
+# Boundary gate (≥ 85%, GUI omit)
+python -m coverage report --include='src/boundary/*' --omit='src/boundary/ui/main_window.py,src/boundary/ui/samples.py,src/boundary/ui/status_mixin.py' --fail-under=85
 ```
 
-### 7.4 CI / HTML 리포트 (권장)
+### 7.4 CI (`.github/workflows/ci.yml`)
+
+push/PR 시:
+
+1. `python -m pytest tests/ -q`
+2. `python -m pytest tests/regression/test_golden_master_solver.py -q`
+3. branch coverage 측정 + Domain ≥95% / Boundary ≥85% gate
+
+### 7.5 HTML 리포트 (로컬 선택)
 
 ```bash
 pytest \
-  --cov=src \
+  --cov=src/boundary \
+  --cov=src/domain \
   --cov-report=term-missing \
   --cov-report=html:htmlcov \
   --cov-branch \
-  --cov-fail-under=90
+  -q
 ```
 
 | 옵션 | 용도 |
@@ -334,35 +353,39 @@ pytest \
 | `--cov-fail-under=N` | 최소 커버리지 미달 시 exit code 1 |
 | `htmlcov/index.html` | PR 리뷰용 시각 리포트 |
 
-### 7.5 `pyproject.toml` 설정 예시 (권장)
+### 7.6 `pyproject.toml` 설정 (Phase 5 적용)
 
 ```toml
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
-addopts = "-ra --strict-markers"
-
 markers = [
     "boundary: Boundary layer contract tests",
     "domain: Domain layer invariant tests",
     "p0: Priority 0 — must pass before merge",
+    "p1: Priority 1 tests",
+    "p2: Priority 2 tests",
+    "integration: Boundary + Domain integration tests",
+    "regression: Regression protection suite",
 ]
 
 [tool.coverage.run]
-source = ["src"]
 branch = true
-omit = ["tests/*", "*/__init__.py"]
+source = ["src"]
+omit = [
+    "src/boundary/ui/main_window.py",
+    "src/boundary/ui/samples.py",
+    "src/boundary/ui/status_mixin.py",
+    "main.py",
+    "src/entity/*",
+]
 
 [tool.coverage.report]
-fail_under = 90
 show_missing = true
-skip_covered = false
-
-[tool.coverage.paths]
-source = ["src/"]
+skip_empty = true
+precision = 2
 ```
 
-### 7.6 커버리지 게이트 워크플로
+### 7.7 커버리지 게이트 워크플로
 
 ```mermaid
 flowchart TD
@@ -398,20 +421,47 @@ flowchart TD
 | Error Contract | EC-1 | AC-US-01-01, 07 | BT-01, BT-08 | `ErrorResponse` (pydantic) |
 | Domain 진입 | UC-5 | AC-US-01-05 | BT-03, DT-05 | `SolvePartialGrid.execute` |
 
+  Q -->|Yes| RF[Refactor — 커버리지 유지·상승]
+  RF --> CI[GitHub Actions — gate Green]
+```
+
+---
+
+## 11. Refactor Phase 5 — Verify & CI (2026-05-29)
+
+| 항목 | 내용 |
+|------|------|
+| **테스트** | `209 passed` — Golden Master 23 포함 |
+| **Domain branch** | **100%** — `magic_square_judge` main/anti diagonal fixture 보강 |
+| **Boundary branch** | **~98%** (GUI omit) — `resolver`/`verifier` L49 re-raise 잔존 |
+| **설정** | `pyproject.toml` markers + coverage omit |
+| **CI** | `.github/workflows/ci.yml` |
+| **계획서** | [report/12-refactoring-plan.md](../report/12-refactoring-plan.md) §11 |
+
+### 11.1 대각선 fixture (DT-03 / AC-US-04-07)
+
+행·열 합 34 유지, 대각선만 깨지는 격자 (`tests/fixtures/grids.py`):
+
+| Fixture | 용도 |
+|---------|------|
+| `GRID_ALL_ROWS_VALID_MAIN_DIAG_BROKEN` | main diagonal ≠ 34, column check 통과 후 L31 분기 |
+| `GRID_ALL_ROWS_VALID_ANTI_DIAG_BROKEN` | anti diagonal ≠ 34, main diag 통과 후 L36 분기 |
+
 ---
 
 ## 10. 1차 Sprint 체크리스트
 
-- [ ] `pip install pytest pytest-cov pytest-mock pydantic` 실행
-- [ ] `tests/boundary/test_boundary_resolver.py` — **BT-01 RED** (`grid=None`, Domain 0회)
-- [ ] `src/boundary/` 최소 Green — `INVALID_SIZE` 반환
-- [ ] `pytest --cov=src --cov-report=term-missing` — term-missing 확인
-- [ ] BT-02 (3×4, 1D) 회귀 추가
-- [ ] BT-03 (유효 입력 → `execute` 1회) 추가
-- [ ] Boundary `--cov-fail-under=85` 통과
-- [ ] Domain Track RED 착수 (DT-01~03)
+- [x] `pip install pytest pytest-cov pytest-mock pydantic` 실행
+- [x] `tests/boundary/test_boundary_resolver.py` — **BT-01 RED** (`grid=None`, Domain 0회)
+- [x] `src/boundary/` 최소 Green — `INVALID_SIZE` 반환
+- [x] `pytest --cov=src --cov-report=term-missing` — term-missing 확인
+- [x] BT-02 (3×4, 1D) 회귀 추가
+- [x] BT-03 (유효 입력 → `execute` 1회) 추가
+- [x] Boundary branch **≥ 85%** (GUI omit) — CI gate Green
+- [x] Domain Track Green (DT-01~05) + branch **≥ 95%**
+- [x] Golden Master baseline 23 tests + Refactor Phase 0~5
 
 ---
 
-**문서 버전:** 1.0  
-**최종 갱신:** 2026-05-29
+**문서 버전:** 1.1  
+**최종 갱신:** 2026-05-29 (Phase 5 — CI coverage gate)
