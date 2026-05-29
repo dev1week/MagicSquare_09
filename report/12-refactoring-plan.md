@@ -1,8 +1,8 @@
 # Refactor 계획서
 
 > **작성일:** 2026-05-29  
-> **상태:** 계획 — 코드 변경 전 (Plan only)  
-> **기준:** Golden Master 코드 리뷰, 리팩토링 점검 항목 분석, `pytest --cov=src` (178 passed, line cov. 59%)  
+> **상태:** Phase 0~2 완료 — `196 passed`, Phase 3 진행 예정  
+> **기준:** Golden Master 코드 리뷰, `pytest --cov=src` (196 passed)  
 > **기준 설계:** [05-dual-track-clean-architecture-tdd-design.md](./05-dual-track-clean-architecture-tdd-design.md)  
 > **선행 보고서:** [11-golden-master-implementation-report.md](./11-golden-master-implementation-report.md)  
 > **프로젝트 규칙:** [`.cursor/rules/`](../.cursor/rules/) — Red → Green → Refactor, assertion 약화·테스트 삭제 금지
@@ -23,13 +23,13 @@ Green 상태 Solver·Boundary 구현을 **외부 계약(EC-1~5, OC-1~6, `int[6]`
 
 | 순번 | 대상 파일 | 문제 | 적용 기법 | 우선순위 |
 |------|-----------|------|-----------|----------|
-| 1 | `src/domain/constants.py` + `input_validator.py`, `complete_grid_verifier.py`, `magic_square_judge.py`, `missing_number_resolver.py`, `grid_io.py` | `4`, `16`, `34`, `6` 등 매직 넘버가 4곳 이상 분산. SSOT 없이 치환 시 EC-2(0~16 vs 1~16) 혼동 위험 | **Extract Constant** — `GRID_SIZE`, `MIN/MAX_CELL_VALUE`, `BLANK_CELL`, `SOLUTION_VECTOR_LENGTH`, `MAGIC_CONSTANT`를 Domain constants에 집약 후 import 치환 | **High** |
+| 1 | `src/domain/constants.py` + … | … | **Extract Constant** — ✅ Phase 2 완료 (2026-05-29) | **High** |
 | 2 | `src/boundary/input_validator.py`, `src/boundary/complete_grid_verifier.py` | 4×4 크기·타입·중복 검사 로직 중복. partial(0 허용·빈칸 2) vs complete(1~16·16개) 정책 차이가 묵시적 | **Extract Class / Strategy** — 공통 `GridStructureValidator` + `PartialGridPolicy` / `CompleteGridPolicy` 분리. 기존 public API·에러 코드 유지 | **High** |
-| 3 | `tests/fixtures/error_catalog.py`, `src/boundary/error_catalog.py` | ERROR_CATALOG 이중 SSOT. 메시지 1글자 변경 시 BT-08·Golden Master 불일치 | **SSOT 통일** — tests는 `src.boundary.error_catalog` import만 사용 | **High** |
+| 3 | `tests/fixtures/error_catalog.py`, … | … | **SSOT 통일** — ✅ Phase 1 완료 | **High** |
 | 4 | `src/domain/solve_partial_grid.py` | 0-index → 1-index 변환·`int[6]` 조립이 유일 지점. 리팩터 시 OC-1~6·Golden Master 전체 영향 | **Preserve + Extract Method** — `to_solution_vector(...)` 등 의미 단위 추출만 허용, 시그니처·순서 불변 | **High** |
 | 5 | `src/boundary/resolver.py`, `src/boundary/complete_grid_verifier.py` | `UnsolvableGrid`→`DOMAIN_UNSOLVABLE`, `GridNotComplete`/`InvalidGridSize`→`INVALID_SIZE` 매핑 분산 | **Extract Method / Mapping Table** — `_map_domain_exception(exc)` 단일 함수로 통합 (동작 동일) | **High** |
-| 6 | `tests/regression/test_golden_master_solver.py`, `tests/fixtures/golden_master/solver_outputs.py`, `tests/fixtures/grids.py` | `_FIXTURE_GRIDS`와 `GOLDEN_MASTER_SOLVER_OUTPUTS` 키 이중 관리. 키 불일치 시 `KeyError` | **SSOT 통일** — golden record에 grid 참조 키만 두거나, grids dict를 golden에서 derive | **Medium** |
-| 7 | `tests/fixtures/grids.py`, `tests/boundary/test_boundary_resolver.py` | `VALID_GRID_SUCCESS_RESULT` mock 목값 ≠ 실제 Golden `[2,3,7,4,4,16]` | **Clarify Intent** — mock 전용 alias·주석 명시 또는 golden baseline으로 통일 | **Medium** |
+| 6 | … | … | **SSOT 통일** — ✅ Phase 1 완료 (`GOLDEN_MASTER_GRIDS`) | **Medium** |
+| 7 | … | … | **Clarify Intent** — ✅ Phase 1 완료 (spy mock 주석) | **Medium** |
 | 8 | `src/domain/placement_trial_solver.py` | `solve`/`_trial` 매개변수 5개. `_trial` 반환 grid는 caller에서 미사용(dead return) | **Introduce Parameter Object** — `PlacementContext` dataclass. `_trial`은 `bool` 반환으로 단순화 | **Medium** |
 | 9 | `src/boundary/complete_grid_verifier.py` | L71–72 `len(seen) != 16` 분기 — 도달 불가에 가까운 dead branch | **Remove Dead Code** — 분기 제거 전 테스트로 “절대 호출 안 됨” 증명 | **Medium** |
 | 10 | `src/boundary/ui/main_window.py` | `SolveTab`/`VerifyTab` `_set_status`·탭 boilerplate 중복. Verify blank 선차단으로 Verifier 에러 경로와 GUI 메시지 diverge | **Extract Superclass / Mixin** — `StatusMixin`, `TabShell` 추출. Verify blank 검사는 Verifier 위임 검토 | **Medium** |
@@ -186,3 +186,36 @@ python -m pytest tests/regression/test_golden_master_solver.py -v
 |------|------|
 | 2026-05-29 | 초안 — Golden Master 리뷰·리팩토링 점검 기반 Plan only |
 | 2026-05-29 | **Phase 0~1 실행** — 분기 테스트 +17, ERROR_CATALOG SSOT, `GOLDEN_MASTER_GRIDS` 통합 (`195 passed`) |
+| 2026-05-29 | **Phase 2 실행** — Domain constants SSOT, 7 modules 치환, Golden Master Green (`196 passed`) |
+
+---
+
+## 8. Phase 2 실행 결과 (2026-05-29)
+
+### 8.1 `src/domain/constants.py` SSOT
+
+| 상수 | 값 | 용도 |
+|------|-----|------|
+| `GRID_SIZE` | 4 | 4×4 격자 |
+| `MAGIC_CONSTANT` | 34 | 마방 합 |
+| `BLANK_CELL` | 0 | 빈칸 |
+| `MIN_PARTIAL_CELL_VALUE` | 0 | Solver/입력 IC-2 (0 허용) |
+| `MIN_FILLED_CELL_VALUE` | 1 | Complete verify (blank 없음) |
+| `MAX_CELL_VALUE` | 16 | 셀 상한 |
+| `REQUIRED_BLANK_COUNT` | 2 | IC-3 |
+| `SOLUTION_VECTOR_LENGTH` | 6 | OC-1 |
+| `CELL_COUNT` | 16 | complete grid unique count |
+
+### 8.2 치환 모듈
+
+- **Domain:** `magic_square_judge`, `missing_number_resolver`, `empty_cell_locator`
+- **Boundary:** `input_validator`, `complete_grid_verifier`, `grid_io`
+
+### 8.3 검증
+
+```powershell
+python -m pytest tests/regression/test_golden_master_solver.py -v  # 17 passed
+python -m pytest tests/ -q                                         # 196 passed
+```
+
+EC-2 partial(0~16) vs complete(1~16) 정책 **유지** 확인.
