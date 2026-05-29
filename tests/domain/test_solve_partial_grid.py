@@ -4,7 +4,7 @@ import pytest
 
 from src.domain.exceptions import UnsolvableGrid
 from src.domain.solve_partial_grid import SolvePartialGrid
-from tests.fixtures.grids import VALID_GRID_TWO_BLANKS
+from tests.fixtures.grids import GRID_UNSOLVABLE, VALID_GRID_TWO_BLANKS
 
 
 @pytest.fixture
@@ -64,12 +64,7 @@ def test_unsolvable_grid_raises_without_success_vector(
     """DT-05 ??both combinations failing raises UnsolvableGrid, no int[6]."""
     # AC-US-05-10
     # Given
-    grid = [
-        [1, 2, 3, 4],
-        [5, 6, 0, 8],
-        [9, 10, 11, 12],
-        [13, 14, 0, 16],
-    ]
+    grid = GRID_UNSOLVABLE
 
     # When / Then
     with pytest.raises(UnsolvableGrid):
