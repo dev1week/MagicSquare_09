@@ -1,0 +1,22 @@
+---
+description: Python coding style and typing standards for MagicSquare
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python Code Style
+
+## Standards
+- Follow PEP8.
+- Add type hints for all public functions and methods.
+- Add explicit return types for public callables.
+- Add Google-style docstrings for public APIs.
+
+## Naming
+- Module and function names use snake_case.
+- Class names use PascalCase.
+- Constants use UPPER_SNAKE_CASE.
+
+## Quality
+- Avoid unexplained magic numbers.
+- Keep functions small and single-purpose.
